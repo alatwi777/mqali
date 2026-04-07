@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>منصة الاختبارات التفاعلية | متوسطة الحسين بن علي</title>
+    <!-- Google Fonts + Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #eef2f7 0%, #d9e2ec 100%);
+            min-height: 100vh;
+            padding: 25px 20px;
+        }
+
+        /* الحاوية الرئيسية */
+        .exam-platform {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffffdd;
+            backdrop-filter: blur(3px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* الكليشه العلوية (شعار + بيانات الجهة) */
+        .header-cliche {
+            background: #1e3c72;
+            background: linear-gradient(135deg, #0b2b44, #1a4a6f);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            color: white;
+            border-bottom: 4px solid #ffc107;
+        }
+        .right-info {
+            text-align: right;
+        }
+        .right-info h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .right-info p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+        .left-handwriting {
+            background: rgba(255,255,240,0.2);
+            backdrop-filter: blur(8px);
+            padding: 10px 18px;
+            border-radius: 32px;
+            border-right: 3px solid #ffc107;
+        }
+        .handwriting-field {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: baseline;
+        }
+        .hand-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .hand-item label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #ffecb3;
+        }
+        .hand-item input {
+            background: #fffef7;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            width: 130px;
+            font-weight: 500;
+            color: #1e2f3a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: 0.2s;
+        }
+        .hand-item input:focus {
+            outline: none;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* تبويبات أنيقة */
+        .tabs-section {
+            display: flex;
+            gap: 12px;
+            padding: 20px 30px 0 30px;
+            background: #f8fafd;
+        }
+        .tab-btn {
+            background: #e9ecef;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 40px 40px 20px 20px;
+            cursor: pointer;
+            transition: 0.25s;
+            color: #2c3e4e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.02);
+        }
+        .tab-btn i {
+            font-size: 1.2rem;
+        }
+        .tab-btn.active {
+            background: #ffffff;
+            color: #1e6f3f;
+            border-bottom: 3px solid #2e7d32;
+            box-shadow: 0 -5px 12px rgba(0,0,0,0.05);
+        }
+        .tab-content {
+            display: none;
+            padding: 30px;
+            background: #ffffff;
+            border-radius: 0 0 2rem 2rem;
+            animation: fadeSlide 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(8px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        /* نماذج وأزرار */
+        .card-panel {
+            background: #fefefe;
+            border-radius: 28px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border: 1px solid #eef2f6;
+        }
+        .btn {
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eef2f5;
+            color: #1e4663;
+        }
+        .btn-primary {
+            background: #1e6f3f;
+            color: white;
+            box-shadow: 0 4px 8px rgba(30,111,63,0.3);
+        }
+        .btn-primary:hover {
+            background: #0f552f;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #ffb74d;
+            color: #3e2a1f;
+        }
+        .btn-secondary:hover {
+            background: #ffa21a;
+            transform: scale(1.02);
+        }
+        .btn-outline {
+            border: 1.5px solid #2c7a4a;
+            background: white;
+            color: #2c7a4a;
+        }
+        .question-item {
+            background: #f9fafc;
+            border-radius: 24px;
+            padding: 18px;
+            margin-bottom: 20px;
+            border-right: 6px solid #2e7d32;
+        }
+        input, textarea {
+            width: 100%;
+            border-radius: 24px;
+            border: 1px solid #cfdfed;
+            padding: 12px 18px;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+        .student-answer-area {
+            background: #fef7e0;
+            border-radius: 20px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        .result-navigation {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #eef3fa;
+            padding: 12px 20px;
+            border-radius: 60px;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .nav-buttons button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 32px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .answer-preview-card {
+            background: white;
+            border-radius: 28px;
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 0 1px #e2e8f0, 0 6px 12px rgba(0,0,0,0.05);
+        }
+        .single-student-answer {
+            border-bottom: 1px solid #e2edf7;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .grade-badge {
+            background: #2e7d32;
+            color: white;
+            border-radius: 50px;
+            padding: 4px 14px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        footer {
+            background: #f1f5f9;
+            text-align: center;
+            padding: 12px;
+            font-size: 0.75rem;
+            color: #4a627a;
+        }
+        @media (max-width: 760px) {
+            .header-cliche { flex-direction: column; align-items: flex-start; gap: 12px;}
+            .handwriting-field { gap: 10px; }
+            .tabs-section { padding: 15px 15px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="exam-platform">
+    <!-- الكليشه العلوية (الدولة في اليمين + بيانات الطالب باللمس في اليسار) -->
+    <div class="header-cliche">
+        <div class="right-info">
+            <h2>المملكة العربية السعودية</h2>
+            <p>وزارة التعليم | إدارة منطقة تبوك | متوسطة الحسين بن علي</p>
+        </div>
+        <div class="left-handwriting">
+            <div class="handwriting-field">
+                <div class="hand-item">
+                    <label><i class="fas fa-user-graduate"></i> الاسم</label>
+                    <input type="text" id="studentName" placeholder="اكتب اسمك بالقلم" style="touch-action: manipulation;">
+                </div>
+                <div class="hand-item">
+                    <label><i class="fas fa-layer-group"></i> الصف</label>
+                    <input type="text" id="studentGrade" placeholder="مثال: أول متوسط">
+                </div>
+                <div class="hand-item">
+                    <label><i class="fas fa-book-open"></i> المادة</label>
+                    <input type="text" id="studentSubject" placeholder="مادة الاختبار">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- تبويبات المعلم والطالب -->
+    <div class="tabs-section">
+        <button class="tab-btn active" data-tab="teacherTab"><i class="fas fa-chalkboard-teacher"></i> المعلم</button>
+        <button class="tab-btn" data-tab="studentTab"><i class="fas fa-user-edit"></i> الطالب</button>
+        <button class="tab-btn" data-tab="resultsTab"><i class="fas fa-chart-line"></i> النتائج والإجابات</button>
+    </div>
+
+    <!-- ********************* تبويب المعلم ********************* -->
+    <div id="teacherTab" class="tab-content active">
+        <div class="card-panel">
+            <h3><i class="fas fa-pen-alt"></i> إنشاء أسئلة مقالية</h3>
+            <p style="color:#2c6e2c;">أسئلة نوعها مقالي فقط، مع تحديد الدرجة لكل سؤال.</p>
+            <div id="questionsContainerTeacher"></div>
+            <div style="display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+                <button id="addQuestionBtn" class="btn btn-primary"><i class="fas fa-plus-circle"></i> إضافة سؤال</button>
+                <button id="saveExamBtn" class="btn btn-secondary"><i class="fas fa-save"></i> حفظ وإرسال إلى الطالب</button>
+            </div>
+            <div id="teacherMsg" style="margin-top: 15px; font-weight: 500; color: #0b5e2e;"></div>
+        </div>
+        <div class="card-panel">
+            <h4><i class="fas fa-info-circle"></i> تعليمات: </h4>
+            <p>✦ كل سؤال مقالي، يحدد المعلم الدرجة النهائية له. ✦ بعد الضغط على حفظ وإرسال، تظهر الأسئلة في تبويب الطالب. ✦ يمكن تعديل الأسئلة قبل الإرسال.</p>
+        </div>
+    </div>
+
+    <!-- ********************* تبويب الطالب ********************* -->
+    <div id="studentTab" class="tab-content">
+        <div class="card-panel">
+            <h3><i class="fas fa-question-circle"></i> أسئلة الاختبار المقالية</h3>
+            <div id="studentQuestionsArea">
+                <p class="text-muted" style="color: gray;">لم يتم إرسال الأسئلة بعد من قبل المعلم ...</p>
+            </div>
+            <div style="margin-top: 25px;">
+                <button id="submitStudentAnswers" class="btn btn-primary"><i class="fas fa-paper-plane"></i> إرسال الإجابات وإنهاء الاختبار</button>
+            </div>
+            <div id="studentSubmitMsg" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <!-- ********************* تبويب النتائج والإجابات ********************* -->
+    <div id="resultsTab" class="tab-content">
+        <div class="card-panel">
+            <h3><i class="fas fa-archive"></i> إجابات الطلاب ومعاينتها</h3>
+            <div class="result-navigation">
+                <div><i class="fas fa-scroll"></i> <strong>التنقل بين الإجابات:</strong></div>
+                <div class="nav-buttons">
+                    <button id="prevAnswerBtn"><i class="fas fa-chevron-right"></i> السابق</button>
+                    <span id="answerCounter" style="margin: 0 10px;">الطالب 1 / 1</span>
+                    <button id="nextAnswerBtn">التالي <i class="fas fa-chevron-left"></i></button>
+                </div>
+                <button id="printResultsBtn" class="btn btn-outline"><i class="fas fa-print"></i> طباعة النتائج</button>
+            </div>
+            <div id="answersPreviewArea" class="answer-preview-card">
+                <!-- سيتم عرض إجابات الطلاب هنا مع شريط تمرير داخلي -->
+                <p style="text-align:center;">لا توجد إجابات بعد، قم بإرسال الإجابات من تبويب الطالب أولاً.</p>
+            </div>
+        </div>
+    </div>
+    <footer>منصة تفاعلية - أسئلة مقالية - دعم كامل للكتابة باللمس والقلم</footer>
+</div>
+
+<script>
+    // بيانات التخزين
+    let examQuestions = [];       // [{questionText, grade}]
+    let studentAnswersList = [];  // [{studentName, studentGrade, studentSubject, answers: [{answerText, questionText, grade}] }]
+    let currentAnswerIndex = 0;
+
+    // عناصر DOM
+    const teacherContainer = document.getElementById('questionsContainerTeacher');
+    const studentArea = document.getElementById('studentQuestionsArea');
+    const previewArea = document.getElementById('answersPreviewArea');
+    const teacherMsgDiv = document.getElementById('teacherMsg');
+    const studentSubmitMsg = document.getElementById('studentSubmitMsg');
+    const answerCounterSpan = document.getElementById('answerCounter');
+
+    // ------------------- دوال مساعدة -------------------
+    function renderTeacherQuestions() {
+        if (!teacherContainer) return;
+        if (examQuestions.length === 0) {
+            teacherContainer.innerHTML = '<div style="background:#f1f8e9; padding:20px; border-radius:24px;">📌 لا توجد أسئلة حالياً، أضف سؤالاً جديداً</div>';
+            return;
+        }
+        let html = '';
+        examQuestions.forEach((q, idx) => {
+            html += `
+                <div class="question-item" data-qidx="${idx}">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong>السؤال ${idx+1}</strong>
+                        <button class="btn btn-outline removeQuestionBtn" data-idx="${idx}" style="background:#ffe0e0; border-color:#c7362b;"><i class="fas fa-trash-alt"></i> حذف</button>
+                    </div>
+                    <label>نص السؤال المقالي:</label>
+                    <textarea class="teacher-question-text" data-idx="${idx}" placeholder="اكتب السؤال هنا...">${escapeHtml(q.questionText)}</textarea>
+                    <label style="margin-top:10px;">الدرجة (من 0 إلى 30):</label>
+                    <input type="number" class="teacher-grade-input" data-idx="${idx}" value="${q.grade}" min="0" max="30" step="0.5">
+                </div>
+            `;
+        });
+        teacherContainer.innerHTML = html;
+
+        // إضافة أحداث للحذف
+        document.querySelectorAll('.removeQuestionBtn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(btn.getAttribute('data-idx'));
+                examQuestions.splice(idx, 1);
+                renderTeacherQuestions();
+            });
+        });
+        // ربط أحداث التعديل المباشر
+        document.querySelectorAll('.teacher-question-text').forEach(txt => {
+            txt.addEventListener('change', (e) => {
+                let idx = parseInt(txt.getAttribute('data-idx'));
+                examQuestions[idx].questionText = txt.value;
+            });
+        });
+        document.querySelectorAll('.teacher-grade-input').forEach(inp => {
+            inp.addEventListener('change', (e) => {
+                let idx = parseInt(inp.getAttribute('data-idx'));
+                let newGrade = parseFloat(inp.value);
+                if(!isNaN(newGrade) && newGrade>=0) examQuestions[idx].grade = newGrade;
+                else examQuestions[idx].grade = 0;
+            });
+        });
+    }
+
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;});}
+
+    // حفظ الأسئلة (إرسال إلى الطالب)
+    document.getElementById('saveExamBtn')?.addEventListener('click', () => {
+        // تحديث القيم من الحقول قبل الحفظ
+        document.querySelectorAll('.teacher-question-text').forEach(txt => {
+            let idx = parseInt(txt.getAttribute('data-idx'));
+            if(!isNaN(idx) && examQuestions[idx]) examQuestions[idx].questionText = txt.value;
+        });
+        document.querySelectorAll('.teacher-grade-input').forEach(inp => {
+            let idx = parseInt(inp.getAttribute('data-idx'));
+            if(!isNaN(idx) && examQuestions[idx]) {
+                let val = parseFloat(inp.value);
+                examQuestions[idx].grade = isNaN(val)?0:val;
+            }
+        });
+        if(examQuestions.length === 0) {
+            teacherMsgDiv.innerHTML = '<span style="color:#c0392b;">⚠️ الرجاء إضافة سؤال مقالي واحد على الأقل قبل الإرسال.</span>';
+            return;
+        }
+        // التحقق من أن كل الأسئلة غير فارغة
+        let valid = true;
+        examQuestions.forEach((q,idx)=>{
+            if(!q.questionText.trim()) { valid=false; teacherMsgDiv.innerHTML = `<span style="color:#c0392b;">⚠️ السؤال رقم ${idx+1} فارغ، يرجى تعبئته.</span>`; }
+        });
+        if(!valid) return;
+        // حفظ في localStorage للتخزين المؤقت
+        localStorage.setItem('exam_questions', JSON.stringify(examQuestions));
+        teacherMsgDiv.innerHTML = '<span style="color:#1e6f3f;"><i class="fas fa-check-circle"></i> تم حفظ الأسئلة وإرسالها إلى تبويب الطالب بنجاح!</span>';
+        // تحديث عرض الطالب فوراً
+        renderStudentQuestions();
+        // مسح أي رسائل سابقة للطالب
+        studentSubmitMsg.innerHTML = '';
+    });
+
+    // عرض الأسئلة للطالب
+    function renderStudentQuestions() {
+        if(!studentArea) return;
+        if(examQuestions.length === 0) {
+            studentArea.innerHTML = '<p style="background:#fff3e0; padding:20px; border-radius:24px;">📢 لم يقم المعلم بإرسال الأسئلة بعد، يرجى الانتظار.</p>';
+            return;
+        }
+        let html = `<div style="margin-bottom:15px;"><strong>⚡ أجب عن الأسئلة التالية كتابة بالقلم أو اللمس:</strong></div>`;
+        examQuestions.forEach((q, idx) => {
+            html += `
+                <div class="question-item" style="border-right-color:#ff9800;">
+                    <div><strong>س${idx+1}:</strong> ${escapeHtml(q.questionText)} <span class="grade-badge" style="background:#f5a623;">الدرجة: ${q.grade}</span></div>
+                    <div class="student-answer-area">
+                        <textarea id="studentAns_${idx}" rows="3" placeholder="اكتب إجابتك هنا (بخط اليد أو بالقلم)..."></textarea>
+                    </div>
+                </div>
+            `;
+        });
+        studentArea.innerHTML = html;
+    }
+
+    // إرسال إجابات الطالب
+    document.getElementById('submitStudentAnswers')?.addEventListener('click', () => {
+        if(examQuestions.length === 0) {
+            studentSubmitMsg.innerHTML = '<span style="color:#d32f2f;">⚠️ لا توجد أسئلة متاحة حالياً، راجع المعلم.</span>';
+            return;
+        }
+        const studentName = document.getElementById('studentName')?.value.trim();
+        const studentGrade = document.getElementById('studentGrade')?.value.trim();
+        const studentSubject = document.getElementById('studentSubject')?.value.trim();
+        if(!studentName || !studentGrade || !studentSubject) {
+            studentSubmitMsg.innerHTML = '<span style="color:#d32f2f;">⚠️ الرجاء إكمال بيانات الطالب (الاسم، الصف، المادة) بالقلم أو الكتابة.</span>';
+            return;
+        }
+        let answersArray = [];
+        let allAnswered = true;
+        for(let i=0; i<examQuestions.length; i++) {
+            let answerText = document.getElementById(`studentAns_${i}`)?.value.trim() || '';
+            if(answerText === "") allAnswered = false;
+            answersArray.push({
+                questionText: examQuestions[i].questionText,
+                answerText: answerText,
+                gradeValue: examQuestions[i].grade
+            });
+        }
+        if(!allAnswered) {
+            if(!confirm("بعض الإجابات فارغة، هل تريد إرسالها على أي حال؟")) return;
+        }
+        const submission = {
+            studentName: studentName,
+            studentGrade: studentGrade,
+            studentSubject: studentSubject,
+            submittedAt: new Date().toLocaleString(),
+            answers: answersArray
+        };
+        // إضافة إلى قائمة الإجابات
+        studentAnswersList.push(submission);
+        localStorage.setItem('student_submissions', JSON.stringify(studentAnswersList));
+        studentSubmitMsg.innerHTML = '<span style="color:#2e7d32;"><i class="fas fa-check"></i> تم إرسال إجاباتك بنجاح! يمكن للمعلم معاينتها في تبويب النتائج.</span>';
+        // تحديث معاينة النتائج
+        renderResultsPreview();
+        // اختياري: تفريغ الحقول لا يتم مسحها حتى يتمكن الطالب من رؤية إجاباته
+    });
+
+    // عرض النتائج والتنقل بين الطلاب
+    function renderResultsPreview() {
+        if(!previewArea) return;
+        if(studentAnswersList.length === 0) {
+            previewArea.innerHTML = '<p style="text-align:center;">📭 لا توجد إجابات مرسلة حتى الآن، قم بإرسال إجابات من تبويب الطالب.</p>';
+            answerCounterSpan.innerText = `0 / 0`;
+            return;
+        }
+        if(currentAnswerIndex >= studentAnswersList.length) currentAnswerIndex = studentAnswersList.length-1;
+        if(currentAnswerIndex < 0) currentAnswerIndex = 0;
+        const student = studentAnswersList[currentAnswerIndex];
+        answerCounterSpan.innerText = `الطالب ${currentAnswerIndex+1} / ${studentAnswersList.length}`;
+        
+        let answersHtml = `<div style="direction:rtl;"><div class="single-student-answer" style="background:#fef9e6; border-radius:28px; padding:20px;">`;
+        answersHtml += `<h4><i class="fas fa-user"></i> الاسم: ${escapeHtml(student.studentName)} | الصف: ${escapeHtml(student.studentGrade)} | المادة: ${escapeHtml(student.studentSubject)}</h4>`;
+        answersHtml += `<p><i class="far fa-calendar-alt"></i> تاريخ الإرسال: ${student.submittedAt}</p><hr>`;
+        student.answers.forEach((ans, idx) => {
+            answersHtml += `
+                <div style="margin-bottom: 20px; border-right: 3px solid #4caf50; padding-right: 12px;">
+                    <strong>السؤال ${idx+1}:</strong> ${escapeHtml(ans.questionText)} <span class="grade-badge">الدرجة المستحقة: ${ans.gradeValue}</span><br/>
+                    <div style="background:#fff7e8; padding:12px; border-radius:20px; margin-top:8px;">
+                        <i class="fas fa-pen-fancy"></i> <strong>إجابة الطالب:</strong><br/>
+                        <div style="white-space: pre-wrap;">${escapeHtml(ans.answerText) || "⚠️ لم يقدم إجابة"}</div>
+                    </div>
+                </div>
+            `;
+        });
+        answersHtml += `</div></div>`;
+        previewArea.innerHTML = answersHtml;
+    }
+
+    // أحداث التنقل بين الإجابات
+    document.getElementById('prevAnswerBtn')?.addEventListener('click', () => {
+        if(studentAnswersList.length === 0) return;
+        currentAnswerIndex = (currentAnswerIndex - 1 + studentAnswersList.length) % studentAnswersList.length;
+        renderResultsPreview();
+    });
+    document.getElementById('nextAnswerBtn')?.addEventListener('click', () => {
+        if(studentAnswersList.length === 0) return;
+        currentAnswerIndex = (currentAnswerIndex + 1) % studentAnswersList.length;
+        renderResultsPreview();
+    });
+    document.getElementById('printResultsBtn')?.addEventListener('click', () => {
+        const printWindow = window.open('', '_blank');
+        if(!printWindow) { alert("الرجاء السماح للنوافذ المنبثقة"); return; }
+        let content = `<html dir="rtl"><head><title>نتائج الطلاب</title><link href="https://fonts.googleapis.com/css2?family=Tajawal&display=swap" rel="stylesheet"><style>body{font-family:'Tajawal'; padding:20px;} .ans-card{border:1px solid #ccc; margin-bottom:20px; padding:15px; border-radius:16px;}</style></head><body><h2>نتائج اختبار متوسطة الحسين بن علي</h2>`;
+        studentAnswersList.forEach((std, i) => {
+            content += `<div class="ans-card"><h3>الطالب: ${std.studentName} - ${std.studentGrade} - ${std.studentSubject}</h3><p>تاريخ الإرسال: ${std.submittedAt}</p>`;
+            std.answers.forEach((a, idx) => {
+                content += `<p><strong>س${idx+1}:</strong> ${a.questionText}<br/><strong>الإجابة:</strong> ${a.answerText || "(فارغة)"}<br/><strong>الدرجة المخصصة:</strong> ${a.gradeValue}</p><hr/>`;
+            });
+            content += `</div>`;
+        });
+        content += `</body></html>`;
+        printWindow.document.write(content);
+        printWindow.document.close();
+        printWindow.print();
+    });
+
+    // تحميل البيانات المحفوظة مسبقاً
+    function loadSavedData() {
+        const savedQuestions = localStorage.getItem('exam_questions');
+        if(savedQuestions) {
+            try{
+                examQuestions = JSON.parse(savedQuestions);
+                renderTeacherQuestions();
+            }catch(e){}
+        } else {
+            // أسئلة افتراضية نموذجية
+            examQuestions = [
+                {questionText: "اشرح أهمية المواطنة الرقمية في المجتمع السعودي؟", grade: 5},
+                {questionText: "ما هي أبرز إنجازات رؤية 2030 في مجال التعليم؟", grade: 5}
+            ];
+            renderTeacherQuestions();
+        }
+        const savedSubmissions = localStorage.getItem('student_submissions');
+        if(savedSubmissions) {
+            try{
+                studentAnswersList = JSON.parse(savedSubmissions);
+                if(studentAnswersList.length) renderResultsPreview();
+                else previewArea.innerHTML = '<p>لا توجد إجابات بعد</p>';
+            }catch(e){}
+        }
+        renderStudentQuestions();
+        renderResultsPreview();
+    }
+
+    // التبويب
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            tabs.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(tabId === 'resultsTab') renderResultsPreview();
+            if(tabId === 'studentTab') renderStudentQuestions();
+        });
+    });
+
+    loadSavedData();
+    // إعادة عرض عند تغيير الأسئلة في المعلم
+    window.renderTeacherQuestions = renderTeacherQuestions;
+</script>
+</body>
+</html>
