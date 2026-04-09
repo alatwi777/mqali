@@ -31,36 +31,16 @@
             transition: all 0.3s ease;
         }
 
-        /* Header */
+        /* Header cliche */
         .header-cliche {
             background: linear-gradient(135deg, #0b2b44, #1a4a6f);
             padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+            text-align: center;
             color: white;
             border-bottom: 4px solid #ffc107;
         }
-        .right-info h2 { font-size: 1.4rem; font-weight: 700; }
-        .right-info p { font-size: 0.85rem; opacity: 0.9; }
-        .left-handwriting {
-            background: rgba(255,255,240,0.2);
-            backdrop-filter: blur(8px);
-            padding: 10px 18px;
-            border-radius: 32px;
-        }
-        .handwriting-field { display: flex; gap: 20px; flex-wrap: wrap; }
-        .hand-item { display: flex; flex-direction: column; gap: 5px; }
-        .hand-item label { font-size: 0.75rem; color: #ffecb3; }
-        .hand-item input {
-            background: #fffef7;
-            border: none;
-            border-radius: 40px;
-            padding: 8px 16px;
-            width: 130px;
-            font-weight: 500;
-        }
+        .header-cliche h2 { font-size: 1.4rem; font-weight: 700; }
+        .header-cliche p { font-size: 0.85rem; opacity: 0.9; }
 
         /* Tabs */
         .tabs-section {
@@ -113,6 +93,7 @@
         .btn-primary:hover { background: #0f552f; transform: translateY(-2px); }
         .btn-secondary { background: #ffb74d; color: #3e2a1f; }
         .btn-outline { border: 1.5px solid #2c7a4a; background: white; color: #2c7a4a; }
+        .btn-danger { background: #d32f2f; color: white; }
         .question-item {
             background: #f9fafc;
             border-radius: 24px;
@@ -125,49 +106,102 @@
         .result-navigation { display: flex; align-items: center; justify-content: space-between; background: #eef3fa; padding: 12px 20px; border-radius: 60px; margin-bottom: 20px; flex-wrap: wrap; }
         .answer-preview-card { background: white; border-radius: 28px; padding: 20px; max-height: 550px; overflow-y: auto; }
         .grade-input-small { width: 80px; padding: 5px; border-radius: 20px; text-align: center; }
-        .lock-overlay { background: #f8f9fa; border-radius: 28px; padding: 20px; text-align: center; margin-top: 20px; }
+        
+        /* Modal نافذة بيانات الطالب */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+ backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: white;
+            border-radius: 48px;
+            padding: 30px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-card h3 { margin-bottom: 20px; color: #1e6f3f; }
+        .modal-card input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 60px;
+            border: 1px solid #ccc;
+        }
+        .teacher-icon {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 28px;
+            color: #ffb74d;
+            cursor: pointer;
+            background: #f0f0f0;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .teacher-icon:hover { background: #ffb74d; color: white; transform: scale(1.05); }
         footer { background: #f1f5f9; text-align: center; padding: 12px; font-size: 0.75rem; }
-        @media (max-width: 760px) { .header-cliche { flex-direction: column; align-items: flex-start; } }
+        @media (max-width: 760px) { .header-cliche { padding: 1rem; } .tabs-section { padding: 15px; } }
+        .locked-message { background: #fff3e0; padding: 15px; border-radius: 28px; margin-top: 20px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="exam-platform">
-    <!-- Header -->
+    <!-- الكليشه العلوية فقط بدون بيانات الطالب -->
     <div class="header-cliche">
-        <div class="right-info">
+        <div>
             <h2>المملكة العربية السعودية</h2>
             <p>وزارة التعليم | إدارة منطقة تبوك | متوسطة الحسين بن علي</p>
         </div>
-        <div class="left-handwriting">
-            <div class="handwriting-field">
-                <div class="hand-item"><label>الاسم</label><input type="text" id="studentName" placeholder="اكتب اسمك بالقلم"></div>
-                <div class="hand-item"><label>الصف</label><input type="text" id="studentGrade" placeholder="مثال: أول متوسط"></div>
-                <div class="hand-item"><label>المادة</label><input type="text" id="studentSubject" placeholder="مادة الاختبار"></div>
+    </div>
+
+    <!-- تبويبات (الطالب هو الظاهر افتراضياً) -->
+    <div class="tabs-section">
+        <button class="tab-btn active" data-tab="studentTab"><i class="fas fa-user-edit"></i> الطالب</button>
+        <button class="tab-btn" data-tab="teacherTab"><i class="fas fa-chalkboard-teacher"></i> المعلم</button>
+    </div>
+
+    <!-- تبويب الطالب -->
+    <div id="studentTab" class="tab-content active">
+        <div class="card-panel">
+            <h3><i class="fas fa-question-circle"></i> أسئلة الاختبار المقالية</h3>
+            <div id="studentQuestionsArea"></div>
+            <div id="studentSubmitArea">
+                <button id="submitStudentAnswers" class="btn btn-primary"><i class="fas fa-paper-plane"></i> إرسال الإجابات وإنهاء الاختبار</button>
             </div>
+            <div id="studentSubmitMsg"></div>
+            <div id="studentLockedMsg" class="locked-message" style="display:none;"></div>
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs-section">
-        <button class="tab-btn active" data-tab="teacherTab"><i class="fas fa-chalkboard-teacher"></i> المعلم</button>
-        <button class="tab-btn" data-tab="studentTab"><i class="fas fa-user-edit"></i> الطالب</button>
-    </div>
-
-    <!-- ********************* TAB TEACHER ********************* -->
-    <div id="teacherTab" class="tab-content active">
-        <!-- قسم حماية المعلم بالرقم السري -->
+    <!-- تبويب المعلم (مخفي وحمايته برقم سري) -->
+    <div id="teacherTab" class="tab-content">
         <div class="card-panel" id="teacherLockPanel">
             <h3><i class="fas fa-lock"></i> الدخول لمنطقة المعلم</h3>
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <input type="password" id="teacherPasswordInput" placeholder="أدخل الرقم السري" style="width: 200px;">
                 <button id="unlockTeacherBtn" class="btn btn-primary">فتح الوصول</button>
                 <button id="setPasswordBtn" class="btn btn-outline">تعيين رقم سري جديد</button>
             </div>
             <div id="teacherLockMsg" style="margin-top: 10px; color: red;"></div>
         </div>
-
-        <!-- محتوى المعلم (يظهر بعد فتح القفل) -->
         <div id="teacherContent" style="display: none;">
             <!-- قسم إنشاء الأسئلة -->
             <div class="card-panel">
@@ -180,8 +214,7 @@
                 <div id="questionsStats" style="background: #e8f0fe; padding: 12px; border-radius: 28px; font-weight: bold;"></div>
                 <div id="teacherMsg" style="margin-top: 15px;"></div>
             </div>
-
-            <!-- تبويب النتائج داخل المعلم -->
+            <!-- النتائج والإجابات -->
             <div class="card-panel">
                 <h3><i class="fas fa-chart-line"></i> النتائج والإجابات (تصحيح يدوي)</h3>
                 <div class="result-navigation">
@@ -200,59 +233,49 @@
             </div>
         </div>
     </div>
-
-    <!-- ********************* TAB STUDENT ********************* -->
-    <div id="studentTab" class="tab-content">
-        <div class="card-panel">
-            <h3><i class="fas fa-question-circle"></i> أسئلة الاختبار المقالية</h3>
-            <div id="studentQuestionsArea"></div>
-            <div id="studentSubmitArea">
-                <button id="submitStudentAnswers" class="btn btn-primary"><i class="fas fa-paper-plane"></i> إرسال الإجابات وإنهاء الاختبار</button>
-            </div>
-            <div id="studentSubmitMsg"></div>
-            <!-- نافذة إعادة المحاولة بالرقم السري -->
-            <div id="retakeExamPanel" style="display: none; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 20px;">
-                <h4>هل تريد إعادة الاختبار؟</h4>
-                <p>لا يمكن إعادة الإرسال إلا بعد موافقة المعلم (الرقم السري الخاص به).</p>
-                <input type="password" id="retakePassword" placeholder="الرقم السري للمعلم">
-                <button id="unlockRetakeBtn" class="btn btn-secondary">السماح بإعادة الاختبار</button>
-                <div id="retakeMsg"></div>
-            </div>
-        </div>
-    </div>
-    <footer>منصة تفاعلية - حفظ تلقائي لجميع البيانات</footer>
+    <footer>منصة تفاعلية - حفظ تلقائي</footer>
 </div>
 
 <script>
-    // ========== بيانات التخزين ==========
-    let examQuestions = [];          // {questionText, grade}
-    let studentAnswersList = [];     // كل إرسال طالب
+    // ---------- المتغيرات العامة ----------
+    let examQuestions = [];          
+    let studentAnswersList = [];     
     let currentAnswerIndex = 0;
-    let teacherSecret = localStorage.getItem('teacher_secret') || "1234"; // الرقم السري الافتراضي 1234
+    let teacherSecret = localStorage.getItem('teacher_secret') || "";   // فارغ في البداية، يتعين أول مرة
     let isTeacherUnlocked = false;
+    let currentStudentData = { name: "", grade: "", subject: "" };
+    let hasStudentSubmitted = false;      // هل هذا الطالب (باسمه وصفه) سبق له الإرسال؟
+    let studentSubmitLocked = false;      // قفل الواجهة
 
-    // عناصر مهمة
+    // عناصر DOM
     const teacherContainer = document.getElementById('questionsContainerTeacher');
     const studentArea = document.getElementById('studentQuestionsArea');
     const previewArea = document.getElementById('answersPreviewArea');
     const teacherContentDiv = document.getElementById('teacherContent');
     const teacherLockMsg = document.getElementById('teacherLockMsg');
+    const submitBtn = document.getElementById('submitStudentAnswers');
+    const studentSubmitMsgDiv = document.getElementById('studentSubmitMsg');
+    const studentLockedMsgDiv = document.getElementById('studentLockedMsg');
 
-    // Helper
+    // ---------- دوال مساعدة ----------
     function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;});}
 
-    // تحديث احصاءات الأسئلة (العدد والمجموع)
+    function saveAllToLocal() {
+        localStorage.setItem('exam_questions', JSON.stringify(examQuestions));
+        localStorage.setItem('student_submissions', JSON.stringify(studentAnswersList));
+        updateStats();
+    }
+
     function updateStats() {
         const statsDiv = document.getElementById('questionsStats');
         if(statsDiv) {
             let total = examQuestions.reduce((sum, q) => sum + (parseFloat(q.grade) || 0), 0);
             statsDiv.innerHTML = `<i class="fas fa-calculator"></i> عدد الأسئلة: ${examQuestions.length} | مجموع الدرجات: ${total}`;
         }
-        // حفظ تلقائي
         localStorage.setItem('exam_questions', JSON.stringify(examQuestions));
     }
 
-    // عرض أسئلة المعلم مع خاصية الحذف والتعديل
+    // عرض أسئلة المعلم
     function renderTeacherQuestions() {
         if(!teacherContainer) return;
         if(examQuestions.length === 0) {
@@ -276,21 +299,21 @@
             `;
         });
         teacherContainer.innerHTML = html;
-        // ربط الأحداث
+        // أحداث الحذف والتعديل
         document.querySelectorAll('.removeQuestionBtn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 let idx = parseInt(btn.getAttribute('data-idx'));
                 examQuestions.splice(idx, 1);
                 renderTeacherQuestions();
                 saveAllToLocal();
-                renderStudentQuestions(); // تحديث الطالب فوراً
+                renderStudentQuestionsUI();
             });
         });
         document.querySelectorAll('.teacher-question-text').forEach(txt => {
             txt.addEventListener('input', function() {
                 let idx = parseInt(this.getAttribute('data-idx'));
                 examQuestions[idx].questionText = this.value;
-                updateStats(); saveAllToLocal(); renderStudentQuestions();
+                updateStats(); saveAllToLocal(); renderStudentQuestionsUI();
             });
         });
         document.querySelectorAll('.teacher-grade-input').forEach(inp => {
@@ -298,61 +321,56 @@
                 let idx = parseInt(this.getAttribute('data-idx'));
                 let val = parseFloat(this.value);
                 examQuestions[idx].grade = isNaN(val)?0:val;
-                updateStats(); saveAllToLocal(); renderStudentQuestions();
+                updateStats(); saveAllToLocal(); renderStudentQuestionsUI();
             });
         });
         updateStats();
     }
 
-    // عرض الأسئلة للطالب
-    function renderStudentQuestions() {
+    // عرض أسئلة للطالب (مع تعطيل إذا كان قد أرسل)
+    function renderStudentQuestionsUI() {
         if(!studentArea) return;
         if(examQuestions.length === 0) {
             studentArea.innerHTML = '<p style="background:#fff3e0; padding:20px;">📢 لم يقم المعلم بإرسال الأسئلة بعد.</p>';
             return;
         }
+        if(studentSubmitLocked) {
+            studentArea.innerHTML = `<div class="locked-message"><i class="fas fa-ban"></i> لقد أنهيت الاختبار مسبقاً. لا يمكنك تغيير الإجابات.<br>如需重考، يرجى الاتصال بالمعلم (الرقم السري).</div>`;
+            return;
+        }
         let html = `<div><strong>⚡ أجب كتابة بالقلم:</strong></div>`;
         examQuestions.forEach((q, idx) => {
+            let savedVal = (localStorage.getItem(`temp_answer_${idx}`) || '');
             html += `
                 <div class="question-item">
                     <div><strong>س${idx+1}:</strong> ${escapeHtml(q.questionText)} <span class="grade-badge" style="background:#f5a623;">الدرجة: ${q.grade}</span></div>
                     <div class="student-answer-area">
-                        <textarea id="studentAns_${idx}" rows="3" placeholder="اكتب إجابتك هنا..."></textarea>
+                        <textarea id="studentAns_${idx}" rows="3" placeholder="اكتب إجابتك هنا...">${escapeHtml(savedVal)}</textarea>
                     </div>
                 </div>
             `;
         });
         studentArea.innerHTML = html;
-        // استرجاع إجابات الطالب اذا كان سبق وكتب (حفظ تلقائي)
-        const savedDraft = localStorage.getItem('current_student_draft');
-        if(savedDraft && !localStorage.getItem('exam_locked_for_student')) {
-            let draftAnswers = JSON.parse(savedDraft);
-            draftAnswers.forEach((ans, idx) => {
-                let ta = document.getElementById(`studentAns_${idx}`);
-                if(ta) ta.value = ans;
-            });
-        }
-        // حفظ تلقائي لمسودة الطالب
-        document.querySelectorAll('#studentQuestionsArea textarea').forEach(ta => {
-            ta.addEventListener('input', function() {
-                let answers = [];
-                for(let i=0; i<examQuestions.length; i++) {
-                    let el = document.getElementById(`studentAns_${i}`);
-                    answers.push(el ? el.value : '');
+        // حفظ تلقائي لمسودة الطالب (إذا لم يكن مقفلاً)
+        if(!studentSubmitLocked) {
+            for(let i=0; i<examQuestions.length; i++) {
+                let ta = document.getElementById(`studentAns_${i}`);
+                if(ta) {
+                    ta.addEventListener('input', function() {
+                        localStorage.setItem(`temp_answer_${i}`, this.value);
+                    });
                 }
-                localStorage.setItem('current_student_draft', JSON.stringify(answers));
-            });
-        });
+            }
+        } else {
+            // تعطيل الحقول
+            for(let i=0; i<examQuestions.length; i++) {
+                let ta = document.getElementById(`studentAns_${i}`);
+                if(ta) ta.disabled = true;
+            }
+        }
     }
 
-    // حفظ شامل
-    function saveAllToLocal() {
-        localStorage.setItem('exam_questions', JSON.stringify(examQuestions));
-        localStorage.setItem('student_submissions', JSON.stringify(studentAnswersList));
-        updateStats();
-    }
-
-    // عرض النتائج داخل تبويب المعلم مع إمكانية تعديل الدرجة يدوياً
+    // عرض النتائج داخل المعلم
     function renderResultsPreview() {
         if(!previewArea) return;
         if(studentAnswersList.length === 0) {
@@ -368,8 +386,7 @@
         let html = `<div><h4><i class="fas fa-user"></i> الاسم: ${escapeHtml(student.studentName)} | الصف: ${student.studentGrade} | المادة: ${student.studentSubject}</h4>`;
         html += `<p>📅 تاريخ الإرسال: ${student.submittedAt}</p><hr>`;
         student.answers.forEach((ans, idx) => {
-            // الدرجة اليدوية التي سجلها المعلم (توجد في ans.manualGrade)
-            let manualGrade = (ans.manualGrade !== undefined) ? ans.manualGrade : (ans.gradeValue || 0);
+            let manualGrade = (ans.manualGrade !== undefined && ans.manualGrade !== null) ? ans.manualGrade : (ans.gradeValue || 0);
             html += `
                 <div style="margin-bottom: 20px; border-right: 3px solid #2196f3; padding-right: 12px;">
                     <strong>س${idx+1}:</strong> ${escapeHtml(ans.questionText)} <br/>
@@ -377,7 +394,7 @@
                         <i class="fas fa-pen-fancy"></i> <strong>إجابة الطالب:</strong><br/> ${escapeHtml(ans.answerText) || "لم يقدم إجابة"}
                     </div>
                     <div style="margin-top: 10px;">
-                        <label>الدرجة المستحقة / الدرجة التي يمنحها المعلم: </label>
+                        <label>الدرجة التي يمنحها المعلم: </label>
                         <input type="number" class="grade-input-small manual-grade-input" data-std-index="${currentAnswerIndex}" data-qidx="${idx}" value="${manualGrade}" step="0.5" min="0" max="${ans.gradeValue}" style="width:90px;">
                         <span> من ${ans.gradeValue}</span>
                     </div>
@@ -387,7 +404,6 @@
         html += `</div>`;
         previewArea.innerHTML = html;
 
-        // ربط أحداث تغيير الدرجات اليدوية
         document.querySelectorAll('.manual-grade-input').forEach(inp => {
             inp.addEventListener('change', function() {
                 let stdIdx = parseInt(this.getAttribute('data-std-index'));
@@ -402,19 +418,14 @@
     }
 
     // إرسال الطالب
-    function submitStudentExam() {
-        if(examQuestions.length === 0) { alert("لا توجد أسئلة متاحة"); return false; }
-        let studentName = document.getElementById('studentName').value.trim();
-        let studentGrade = document.getElementById('studentGrade').value.trim();
-        let studentSubject = document.getElementById('studentSubject').value.trim();
-        if(!studentName || !studentGrade || !studentSubject) { alert("يرجى تعبئة بيانات الطالب (الاسم، الصف، المادة)"); return false; }
-        // التحقق إذا كان هذا الطالب قد أرسل مسبقاً بنفس الاسم؟ نمنع التكرار إلا بعد الرقم السري.
-        let alreadySubmitted = studentAnswersList.some(s => s.studentName === studentName && s.studentGrade === studentGrade);
-        if(alreadySubmitted && !localStorage.getItem('force_retake_allowed')) {
-            document.getElementById('retakeExamPanel').style.display = 'block';
-            document.getElementById('studentSubmitMsg').innerHTML = '<span style="color:red;">⚠️ لقد سبق لك إجراء الاختبار. لا يمكن إعادة الإرسال إلا بعد إدخال الرقم السري للمعلم.</span>';
-            return false;
+    function submitFinalExam() {
+        if(studentSubmitLocked) { alert("لا يمكنك إعادة الإرسال، لقد أنهيت الاختبار مسبقاً"); return; }
+        if(examQuestions.length === 0) { alert("لا توجد أسئلة متاحة"); return; }
+        if(!currentStudentData.name || !currentStudentData.grade || !currentStudentData.subject) {
+            alert("بيانات الطالب غير مكتملة، الرجاء إعادة فتح النافذة");
+            return;
         }
+        // تجميع الإجابات
         let answersArray = [];
         for(let i=0; i<examQuestions.length; i++) {
             let ansText = document.getElementById(`studentAns_${i}`)?.value.trim() || '';
@@ -426,87 +437,108 @@
             });
         }
         let submission = {
-            studentName, studentGrade, studentSubject,
+            studentName: currentStudentData.name,
+            studentGrade: currentStudentData.grade,
+            studentSubject: currentStudentData.subject,
             submittedAt: new Date().toLocaleString(),
             answers: answersArray
         };
         studentAnswersList.push(submission);
         saveAllToLocal();
-        localStorage.removeItem('current_student_draft');
-        localStorage.setItem('exam_locked_for_student', 'true');
-        document.getElementById('studentSubmitMsg').innerHTML = '<span style="color:green;"><i class="fas fa-check-circle"></i> تم إرسال الاختبار بنجاح! لا يمكنك التعديل مرة أخرى.</span>';
-        document.getElementById('submitStudentAnswers').disabled = true;
-        document.getElementById('retakeExamPanel').style.display = 'block';
-        renderResultsPreview();
-        return true;
+        // قفل الطالب نهائياً لهذا الجلسة
+        studentSubmitLocked = true;
+        localStorage.setItem(`student_locked_${currentStudentData.name}_${currentStudentData.grade}`, 'true');
+        // مسح المسودات
+        for(let i=0; i<examQuestions.length; i++) localStorage.removeItem(`temp_answer_${i}`);
+        studentSubmitMsgDiv.innerHTML = '<span style="color:green;"><i class="fas fa-check-circle"></i> تم إرسال الاختبار بنجاح! لا يمكنك تعديل الإجابات مرة أخرى.如需重考، يرجى الضغط على أيقونة المعلم وإدخال الرقم السري.</span>';
+        submitBtn.disabled = true;
+        renderStudentQuestionsUI();  // يعرض الحقول مقفلة
+        renderResultsPreview();      // تحديث النتائج للمعلم
+        // عرض رسالة إضافية بالقفل
+        studentLockedMsgDiv.style.display = 'block';
+        studentLockedMsgDiv.innerHTML = '<i class="fas fa-lock"></i> الاختبار منتهي. لا يمكن إعادة الحل إلا عبر المعلم (الرقم السري).';
     }
 
-    // تصدير الدرجات (الاسم + الدرجة الكلية)
-    function exportGrades() {
-        if(studentAnswersList.length === 0) { alert("لا توجد إجابات لتصديرها"); return; }
-        let csvRows = [["اسم الطالب", "الدرجة الكلية"]];
-        for(let std of studentAnswersList) {
-            let total = 0;
-            for(let ans of std.answers) {
-                let gradeGiven = (ans.manualGrade !== undefined && ans.manualGrade !== null) ? ans.manualGrade : 0;
-                total += parseFloat(gradeGiven);
+    // نافذة إدخال بيانات الطالب (أيقونة المعلم مدمجة)
+    function showStudentInfoModal() {
+        // التحقق إن كان الطالب قد أرسل مسبقاً وحاول الدخول مجدداً؟
+        let modalHtml = `
+            <div id="studentModal" class="modal-overlay">
+                <div class="modal-card">
+                    <div class="teacher-icon" id="teacherIconModal">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3><i class="fas fa-user-graduate"></i> بيانات الطالب</h3>
+                    <input type="text" id="modalStudentName" placeholder="الاسم" autocomplete="off">
+                    <input type="text" id="modalStudentGrade" placeholder="الصف">
+                    <input type="text" id="modalStudentSubject" placeholder="المادة">
+                    <button id="confirmStudentBtn" class="btn btn-primary" style="margin-top:15px;">دخول الاختبار</button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modal = document.getElementById('studentModal');
+        const confirmBtn = document.getElementById('confirmStudentBtn');
+        const teacherIcon = document.getElementById('teacherIconModal');
+        
+        confirmBtn.addEventListener('click', () => {
+            let name = document.getElementById('modalStudentName').value.trim();
+            let grade = document.getElementById('modalStudentGrade').value.trim();
+            let subject = document.getElementById('modalStudentSubject').value.trim();
+            if(!name || !grade || !subject) { alert("الرجاء تعبئة جميع الحقول"); return; }
+            // التحقق إذا كان هذا الطالب قد أرسل سابقاً ومقفل
+            let lockKey = `student_locked_${name}_${grade}`;
+            if(localStorage.getItem(lockKey) === 'true') {
+                alert("⚠️ لقد سبق لك إجراء الاختبار ولا يمكنك الدخول مجدداً. الرجاء مراجعة المعلم (الرقم السري).");
+                modal.remove();
+                return;
             }
-            csvRows.push([std.studentName, total]);
-        }
-        let csvContent = csvRows.map(row => row.join(",")).join("\n");
-        let blob = new Blob(["\uFEFF" + csvContent], {type: "text/csv;charset=utf-8;"});
-        let link = document.createElement("a");
-        let url = URL.createObjectURL(blob);
-        link.href = url;
-        link.setAttribute("download", "نتائج_الطلاب.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+            currentStudentData = { name, grade, subject };
+            studentSubmitLocked = false;
+            submitBtn.disabled = false;
+            studentSubmitMsgDiv.innerHTML = '';
+            studentLockedMsgDiv.style.display = 'none';
+            // إعادة تحميل الأسئلة ومسح المسودات السابقة إن وجدت
+            for(let i=0; i<examQuestions.length; i++) localStorage.removeItem(`temp_answer_${i}`);
+            renderStudentQuestionsUI();
+            modal.remove();
+        });
+        
+        teacherIcon.addEventListener('click', () => {
+            modal.remove();
+            openTeacherPortal();  // فتح بوابة المعلم
+        });
     }
 
-    // ========== أحداث الصفحة ==========
-    document.getElementById('addQuestionBtn')?.addEventListener('click', () => {
-        examQuestions.push({questionText: "سؤال مقالي جديد", grade: 5});
-        renderTeacherQuestions();
-        saveAllToLocal();
-        renderStudentQuestions();
-    });
-    document.getElementById('saveExamBtn')?.addEventListener('click', () => {
-        saveAllToLocal();
-        renderStudentQuestions();
-        document.getElementById('teacherMsg').innerHTML = '<span style="color:green;">✅ تم حفظ الأسئلة وإتاحتها للطلاب.</span>';
-        setTimeout(()=> document.getElementById('teacherMsg').innerHTML = '', 2000);
-    });
-    document.getElementById('submitStudentAnswers')?.addEventListener('click', submitStudentExam);
-    document.getElementById('exportGradesBtn')?.addEventListener('click', exportGrades);
-    document.getElementById('printResultsBtn')?.addEventListener('click', () => {
-        let printWin = window.open('', '_blank');
-        let content = `<html dir="rtl"><head><title>نتائج الطلاب</title><style>body{font-family:Tajawal;}</style></head><body><h2>نتائج الاختبار</h2>`;
-        studentAnswersList.forEach(s => {
-            content += `<div><h3>${s.studentName} - ${s.studentGrade}</h3>`;
-            s.answers.forEach((a,idx) => {
-                let finalGrade = (a.manualGrade !== undefined && a.manualGrade !== null) ? a.manualGrade : "لم تصحح";
-                content += `<p><strong>س${idx+1}:</strong> ${a.questionText}<br>الإجابة: ${a.answerText}<br>الدرجة المعطاة: ${finalGrade} / ${a.gradeValue}</p>`;
-            });
-            content += `</div><hr>`;
+    // فتح بوابة المعلم (مع إمكانية تعيين الرقم السري لأول مرة)
+    function openTeacherPortal() {
+        // تفعيل تبويب المعلم
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if(btn.getAttribute('data-tab') === 'teacherTab') btn.classList.add('active');
         });
-        content += `</body></html>`;
-        printWin.document.write(content);
-        printWin.print();
-    });
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById('teacherTab').classList.add('active');
+        // إذا لم يكن هناك رقم سري مخزّن، نطلب تعيينه فوراً
+        if(!teacherSecret || teacherSecret === "") {
+            let newPass = prompt("لم يتم تعيين رقم سري للمعلم من قبل. الرجاء تعيين رقم سري الآن:");
+            if(newPass && newPass.trim()) {
+                teacherSecret = newPass.trim();
+                localStorage.setItem('teacher_secret', teacherSecret);
+                alert("تم تعيين الرقم السري بنجاح");
+            } else {
+                alert("يجب تعيين رقم سري للدخول إلى لوحة المعلم");
+                return;
+            }
+        }
+        // تبقى القفل قائماً حتى يدخل الرقم
+        teacherContentDiv.style.display = 'none';
+        document.getElementById('teacherLockPanel').style.display = 'block';
+        document.getElementById('teacherPasswordInput').value = '';
+        teacherLockMsg.innerHTML = '';
+    }
 
-    // التنقل بين الطلاب
-    document.getElementById('prevAnswerBtn')?.addEventListener('click', () => {
-        if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex - 1 + studentAnswersList.length) % studentAnswersList.length;
-        renderResultsPreview();
-    });
-    document.getElementById('nextAnswerBtn')?.addEventListener('click', () => {
-        if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex + 1) % studentAnswersList.length;
-        renderResultsPreview();
-    });
-
-    // قفل المعلم
+    // أحداث المعلم
     document.getElementById('unlockTeacherBtn')?.addEventListener('click', () => {
         let entered = document.getElementById('teacherPasswordInput').value;
         if(entered === teacherSecret) {
@@ -514,6 +546,7 @@
             teacherContentDiv.style.display = 'block';
             document.getElementById('teacherLockPanel').style.backgroundColor = '#e8f5e9';
             teacherLockMsg.innerHTML = '<span style="color:green;">✅ تم فتح منطقة المعلم</span>';
+            renderResultsPreview();
         } else {
             teacherLockMsg.innerHTML = '<span style="color:red;">❌ الرقم السري غير صحيح</span>';
         }
@@ -526,41 +559,68 @@
             alert("تم تعيين الرقم السري بنجاح");
         }
     });
-    // إعادة الاختبار للطالب عبر الرقم السري
-    document.getElementById('unlockRetakeBtn')?.addEventListener('click', () => {
-        let code = document.getElementById('retakePassword').value;
-        if(code === teacherSecret) {
-            localStorage.removeItem('exam_locked_for_student');
-            localStorage.removeItem('current_student_draft');
-            document.getElementById('submitStudentAnswers').disabled = false;
-            document.getElementById('retakeExamPanel').style.display = 'none';
-            document.getElementById('studentSubmitMsg').innerHTML = '<span style="color:green;">تم فتح الاختبار مجدداً، يمكنك إعادة الحل والإرسال.</span>';
-            // مسح الحقول الحالية
-            for(let i=0; i<examQuestions.length; i++) {
-                let ta = document.getElementById(`studentAns_${i}`);
-                if(ta) ta.value = '';
-            }
-            localStorage.setItem('force_retake_allowed', 'true');
-            setTimeout(()=> localStorage.removeItem('force_retake_allowed'), 1000);
-        } else {
-            document.getElementById('retakeMsg').innerHTML = '<span style="color:red;">الرقم السري غير صحيح، لا يمكن إعادة الاختبار</span>';
-        }
+    document.getElementById('addQuestionBtn')?.addEventListener('click', () => {
+        examQuestions.push({questionText: "سؤال مقالي جديد", grade: 5});
+        renderTeacherQuestions();
+        saveAllToLocal();
+        renderStudentQuestionsUI();
+    });
+    document.getElementById('saveExamBtn')?.addEventListener('click', () => {
+        saveAllToLocal();
+        renderStudentQuestionsUI();
+        document.getElementById('teacherMsg').innerHTML = '<span style="color:green;">✅ تم حفظ الأسئلة وإتاحتها للطلاب.</span>';
+        setTimeout(()=> document.getElementById('teacherMsg').innerHTML = '', 2000);
+    });
+    document.getElementById('submitStudentAnswers')?.addEventListener('click', submitFinalExam);
+    document.getElementById('exportGradesBtn')?.addEventListener('click', () => {
+        if(studentAnswersList.length===0) { alert("لا توجد بيانات"); return; }
+        let csv = [["اسم الطالب", "الدرجة الكلية"]];
+        studentAnswersList.forEach(s => {
+            let total = s.answers.reduce((sum, a) => sum + (a.manualGrade !== undefined && a.manualGrade !== null ? parseFloat(a.manualGrade) : 0), 0);
+            csv.push([s.studentName, total]);
+        });
+        let blob = new Blob(["\uFEFF" + csv.map(r=>r.join(",")).join("\n")], {type:"text/csv"});
+        let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "درجات_الطلاب.csv"; a.click();
+    });
+    document.getElementById('printResultsBtn')?.addEventListener('click', () => {
+        let win = window.open('','_blank');
+        let html = `<html dir="rtl"><head><title>النتائج</title><style>body{font-family:Tajawal;}</style></head><body><h2>نتائج الطلاب</h2>`;
+        studentAnswersList.forEach(s=>{
+            html+=`<div><h3>${s.studentName} - ${s.studentGrade}</h3>`;
+            s.answers.forEach((a,i)=>{
+                let final = (a.manualGrade!==undefined && a.manualGrade!==null)? a.manualGrade : "غير مصحح";
+                html+=`<p><strong>س${i+1}:</strong> ${a.questionText}<br>الإجابة: ${a.answerText}<br>الدرجة: ${final}/${a.gradeValue}</p>`;
+            });
+            html+=`</div><hr>`;
+        });
+        win.document.write(html); win.print();
+    });
+    document.getElementById('prevAnswerBtn')?.addEventListener('click', () => {
+        if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex-1+studentAnswersList.length)%studentAnswersList.length;
+        renderResultsPreview();
+    });
+    document.getElementById('nextAnswerBtn')?.addEventListener('click', () => {
+        if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex+1)%studentAnswersList.length;
+        renderResultsPreview();
     });
 
-    // تحميل البيانات المخزنة
-    function loadData() {
+    // تحميل البيانات وحفظها
+    function loadInitialData() {
         let savedQ = localStorage.getItem('exam_questions');
         if(savedQ) examQuestions = JSON.parse(savedQ);
-        else examQuestions = [{questionText: "اشرح معنى المواطنة الرقمية", grade: 5}];
+        else examQuestions = [{questionText: "اذكر مفهوم المواطنة الرقمية", grade: 5}];
         let savedSub = localStorage.getItem('student_submissions');
         if(savedSub) studentAnswersList = JSON.parse(savedSub);
         renderTeacherQuestions();
-        renderStudentQuestions();
         renderResultsPreview();
-        if(localStorage.getItem('exam_locked_for_student')) document.getElementById('submitStudentAnswers').disabled = true;
+        // إظهار نافذة الطالب أولاً
+        showStudentInfoModal();
+        // ضبط التبويب النشط
+        document.querySelector('.tab-btn[data-tab="studentTab"]').click();
     }
-    loadData();
-    // التبديل بين التبويبات مع تحديث
+    loadInitialData();
+
+    // ربط التبويبات
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             let tabId = btn.getAttribute('data-tab');
@@ -568,8 +628,8 @@
             btn.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            if(tabId === 'studentTab') renderStudentQuestions();
-            if(tabId === 'teacherTab') renderResultsPreview();
+            if(tabId === 'teacherTab' && !isTeacherUnlocked) teacherContentDiv.style.display = 'none';
+            if(tabId === 'studentTab') renderStudentQuestionsUI();
         });
     });
 </script>
