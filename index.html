@@ -91,7 +91,6 @@
         .btn-primary:hover { background: #0f552f; transform: translateY(-2px); }
         .btn-secondary { background: #ffb74d; color: #3e2a1f; }
         .btn-outline { border: 1.5px solid #2c7a4a; background: white; color: #2c7a4a; }
-        .btn-danger { background: #d32f2f; color: white; }
         .question-item {
             background: #f9fafc;
             border-radius: 24px;
@@ -161,6 +160,8 @@
         .sub-tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; }
         .sub-tab-buttons .btn { background: #e9ecef; color: #333; }
         .sub-tab-buttons .btn.active-teacher-tab { background: #1e6f3f; color: white; }
+        .error-message { color: red; font-size: 0.9rem; margin-top: 10px; }
+        .success-message { color: green; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -203,7 +204,7 @@
                         <input type="password" id="teacherAccessPassword" placeholder="الرقم السري" style="width: 200px; margin: 10px;">
                         <button id="verifyTeacherAccessBtn" class="btn btn-primary">تأكيد</button>
                     </div>
-                    <div id="teacherAccessError" style="color: red; margin-top: 10px;"></div>
+                    <div id="teacherAccessError" class="error-message"></div>
                 </div>
             </div>
             <div id="teacherFullPanel" style="display: none;">
@@ -222,7 +223,7 @@
                             <button id="saveExamBtn" class="btn btn-secondary"><i class="fas fa-save"></i> حفظ الأسئلة</button>
                         </div>
                         <div id="questionsStats" style="background: #e8f0fe; padding: 12px; border-radius: 28px; font-weight: bold;"></div>
-                        <div id="teacherMsg" style="margin-top: 15px;"></div>
+                        <div id="teacherMsg" class="success-message"></div>
                     </div>
                 </div>
                 
@@ -253,7 +254,7 @@
                             <input type="password" id="newSecretInput" placeholder="الرقم السري الجديد" style="width: 200px;">
                             <button id="changeSecretBtn" class="btn btn-primary">تغيير الرقم السري</button>
                         </div>
-                        <div id="secretChangeMsg" style="margin-top: 10px;"></div>
+                        <div id="secretChangeMsg" class="success-message"></div>
                         <div style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 20px;">
                             <small><i class="fas fa-info-circle"></i> الرقم السري الافتراضي هو <strong>12</strong> (يمكن تغييره من هنا)</small>
                         </div>
@@ -275,13 +276,20 @@
     let currentStudentData = { name: "", grade: "", subject: "" };
     let studentSubmitLocked = false;
 
-    // تحميل الرقم السري من localStorage إذا كان موجوداً
-    const savedSecret = localStorage.getItem('teacher_secret');
-    if (savedSecret !== null) {
-        teacherSecret = savedSecret;
-    } else {
-        localStorage.setItem('teacher_secret', '12');
+    // تحميل الرقم السري من localStorage
+    function loadTeacherSecret() {
+        const savedSecret = localStorage.getItem('teacher_secret');
+        if (savedSecret !== null && savedSecret !== "") {
+            teacherSecret = savedSecret;
+        } else {
+            teacherSecret = "12";
+            localStorage.setItem('teacher_secret', "12");
+        }
+        console.log("الرقم السري الحالي:", teacherSecret); // للتأكد
     }
+
+    // استدعاء دالة تحميل الرقم السري
+    loadTeacherSecret();
 
     // عناصر DOM
     const teacherContainer = document.getElementById('questionsContainerTeacher');
@@ -473,7 +481,7 @@
         studentSubmitLocked = true;
         localStorage.setItem(`student_locked_${currentStudentData.name}_${currentStudentData.grade}`, 'true');
         for(let i=0; i<examQuestions.length; i++) localStorage.removeItem(`temp_answer_${i}`);
-        studentSubmitMsgDiv.innerHTML = '<span style="color:green;"><i class="fas fa-check-circle"></i> تم إرسال الاختبار بنجاح! لا يمكنك تعديل الإجابات مرة أخرى.如需重考، يرجى الضغط على أيقونة المعلم وإدخال الرقم السري.</span>';
+        studentSubmitMsgDiv.innerHTML = '<span style="color:green;"><i class="fas fa-check-circle"></i> تم إرسال الاختبار بنجاح! لا يمكنك تعديل الإجابات مرة أخرى.</span>';
         submitBtn.disabled = true;
         renderStudentQuestionsUI();
         renderResultsPreview();
@@ -545,7 +553,7 @@
                     <button id="submitSecretBtn" class="btn btn-primary">تأكيد</button>
                     <button id="cancelSecretBtn" class="btn btn-outline">إلغاء</button>
                 </div>
-                <div id="secretErrorMsg" style="color: red; margin-top: 10px;"></div>
+                <div id="secretErrorMsg" class="error-message"></div>
             </div>
         `;
         document.body.appendChild(passModal);
@@ -555,15 +563,13 @@
         const errorDiv = document.getElementById('secretErrorMsg');
         
         const checkPassword = () => {
-            // مقارنة كسلسلة نصية بعد إزالة المسافات
             const entered = passInput.value.trim();
             const secret = teacherSecret.toString().trim();
             if(entered === secret) {
                 passModal.remove();
                 if(callback) callback(true);
             } else {
-                errorDiv.innerText = 'الرقم السري غير صحيح';
-                errorDiv.style.color = 'red';
+                errorDiv.innerText = '❌ الرقم السري غير صحيح';
             }
         };
         submitBtnModal.addEventListener('click', checkPassword);
@@ -575,13 +581,18 @@
     }
 
     function openTeacherTabAfterAuth() {
+        // تفعيل تبويب المعلم
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('teacherTabBtn').classList.add('active');
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.getElementById('teacherTab').classList.add('active');
         
-        document.getElementById('teacherProtectedContent').style.display = 'none';
-        document.getElementById('teacherFullPanel').style.display = 'block';
+        // إخفاء شاشة القفل وإظهار المحتوى
+        const protectedContent = document.getElementById('teacherProtectedContent');
+        const fullPanel = document.getElementById('teacherFullPanel');
+        if(protectedContent) protectedContent.style.display = 'none';
+        if(fullPanel) fullPanel.style.display = 'block';
+        
         isTeacherAuthenticated = true;
         renderTeacherQuestions();
         renderResultsPreview();
@@ -591,22 +602,33 @@
         const verifyBtn = document.getElementById('verifyTeacherAccessBtn');
         const passInput = document.getElementById('teacherAccessPassword');
         const errorDiv = document.getElementById('teacherAccessError');
+        
         if(verifyBtn) {
-            verifyBtn.addEventListener('click', () => {
+            // إزالة أي مستمعين سابقين
+            const newVerifyBtn = verifyBtn.cloneNode(true);
+            verifyBtn.parentNode.replaceChild(newVerifyBtn, verifyBtn);
+            
+            newVerifyBtn.addEventListener('click', () => {
                 const entered = passInput.value.trim();
                 const secret = teacherSecret.toString().trim();
+                console.log("محاولة الدخول:", entered, "السر:", secret); // للتأكد
                 if(entered === secret) {
-                    document.getElementById('teacherProtectedContent').style.display = 'none';
-                    document.getElementById('teacherFullPanel').style.display = 'block';
+                    const protectedContent = document.getElementById('teacherProtectedContent');
+                    const fullPanel = document.getElementById('teacherFullPanel');
+                    if(protectedContent) protectedContent.style.display = 'none';
+                    if(fullPanel) fullPanel.style.display = 'block';
+                    if(errorDiv) errorDiv.innerText = '';
                     isTeacherAuthenticated = true;
                     renderTeacherQuestions();
                     renderResultsPreview();
-                    errorDiv.innerText = '';
                 } else {
-                    errorDiv.innerText = '❌ الرقم السري غير صحيح';
+                    if(errorDiv) errorDiv.innerText = '❌ الرقم السري غير صحيح';
                 }
             });
-            passInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') verifyBtn.click(); });
+            
+            if(passInput) {
+                passInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') newVerifyBtn.click(); });
+            }
         }
     }
 
@@ -615,19 +637,35 @@
         const newSecretInput = document.getElementById('newSecretInput');
         const secretChangeMsg = document.getElementById('secretChangeMsg');
         const currentSecretDisplay = document.getElementById('currentSecretDisplay');
-        if(currentSecretDisplay) currentSecretDisplay.innerText = '•'.repeat(teacherSecret.length);
+        
+        if(currentSecretDisplay) {
+            currentSecretDisplay.innerText = '•'.repeat(teacherSecret.length);
+        }
+        
         if(changeBtn) {
-            changeBtn.addEventListener('click', () => {
+            // إزالة أي مستمعين سابقين
+            const newChangeBtn = changeBtn.cloneNode(true);
+            changeBtn.parentNode.replaceChild(newChangeBtn, changeBtn);
+            
+            newChangeBtn.addEventListener('click', () => {
                 let newPass = newSecretInput.value.trim();
                 if(newPass && newPass.length > 0) {
                     teacherSecret = newPass;
                     localStorage.setItem('teacher_secret', teacherSecret);
-                    secretChangeMsg.innerHTML = '<span style="color:green;">✅ تم تغيير الرقم السري بنجاح</span>';
+                    if(secretChangeMsg) {
+                        secretChangeMsg.innerHTML = '<span style="color:green;">✅ تم تغيير الرقم السري بنجاح</span>';
+                    }
                     newSecretInput.value = '';
-                    if(currentSecretDisplay) currentSecretDisplay.innerText = '•'.repeat(teacherSecret.length);
-                    setTimeout(() => secretChangeMsg.innerHTML = '', 3000);
+                    if(currentSecretDisplay) {
+                        currentSecretDisplay.innerText = '•'.repeat(teacherSecret.length);
+                    }
+                    setTimeout(() => {
+                        if(secretChangeMsg) secretChangeMsg.innerHTML = '';
+                    }, 3000);
                 } else {
-                    secretChangeMsg.innerHTML = '<span style="color:red;">⚠️ الرجاء إدخال رقم سري صالح</span>';
+                    if(secretChangeMsg) {
+                        secretChangeMsg.innerHTML = '<span style="color:red;">⚠️ الرجاء إدخال رقم سري صالح</span>';
+                    }
                 }
             });
         }
@@ -642,24 +680,40 @@
         const settingsPanel = document.getElementById('teacherSettingsPanel');
         
         const removeActiveClass = () => {
-            [questionsTab, resultsTab, settingsTab].forEach(btn => {
-                if(btn) btn.classList.remove('active-teacher-tab');
-            });
+            if(questionsTab) questionsTab.classList.remove('active-teacher-tab');
+            if(resultsTab) resultsTab.classList.remove('active-teacher-tab');
+            if(settingsTab) settingsTab.classList.remove('active-teacher-tab');
         };
         
-        if(questionsTab) questionsTab.addEventListener('click', () => {
-            questionsPanel.style.display = 'block'; resultsPanel.style.display = 'none'; settingsPanel.style.display = 'none';
-            removeActiveClass(); questionsTab.classList.add('active-teacher-tab');
-        });
-        if(resultsTab) resultsTab.addEventListener('click', () => {
-            questionsPanel.style.display = 'none'; resultsPanel.style.display = 'block'; settingsPanel.style.display = 'none';
-            removeActiveClass(); resultsTab.classList.add('active-teacher-tab');
-            renderResultsPreview();
-        });
-        if(settingsTab) settingsTab.addEventListener('click', () => {
-            questionsPanel.style.display = 'none'; resultsPanel.style.display = 'none'; settingsPanel.style.display = 'block';
-            removeActiveClass(); settingsTab.classList.add('active-teacher-tab');
-        });
+        if(questionsTab) {
+            questionsTab.addEventListener('click', () => {
+                if(questionsPanel) questionsPanel.style.display = 'block';
+                if(resultsPanel) resultsPanel.style.display = 'none';
+                if(settingsPanel) settingsPanel.style.display = 'none';
+                removeActiveClass();
+                questionsTab.classList.add('active-teacher-tab');
+            });
+        }
+        if(resultsTab) {
+            resultsTab.addEventListener('click', () => {
+                if(questionsPanel) questionsPanel.style.display = 'none';
+                if(resultsPanel) resultsPanel.style.display = 'block';
+                if(settingsPanel) settingsPanel.style.display = 'none';
+                removeActiveClass();
+                resultsTab.classList.add('active-teacher-tab');
+                renderResultsPreview();
+            });
+        }
+        if(settingsTab) {
+            settingsTab.addEventListener('click', () => {
+                if(questionsPanel) questionsPanel.style.display = 'none';
+                if(resultsPanel) resultsPanel.style.display = 'none';
+                if(settingsPanel) settingsPanel.style.display = 'block';
+                removeActiveClass();
+                settingsTab.classList.add('active-teacher-tab');
+            });
+        }
+        
         if(questionsPanel) questionsPanel.style.display = 'block';
         if(resultsPanel) resultsPanel.style.display = 'none';
         if(settingsPanel) settingsPanel.style.display = 'none';
@@ -668,88 +722,136 @@
 
     function loadInitialData() {
         let savedQ = localStorage.getItem('exam_questions');
-        if(savedQ) examQuestions = JSON.parse(savedQ);
-        else examQuestions = [{questionText: "اذكر مفهوم المواطنة الرقمية", grade: 5}];
+        if(savedQ) {
+            try {
+                examQuestions = JSON.parse(savedQ);
+            } catch(e) { examQuestions = [{questionText: "اذكر مفهوم المواطنة الرقمية", grade: 5}]; }
+        } else {
+            examQuestions = [{questionText: "اذكر مفهوم المواطنة الرقمية", grade: 5}];
+        }
+        
         let savedSub = localStorage.getItem('student_submissions');
-        if(savedSub) studentAnswersList = JSON.parse(savedSub);
+        if(savedSub) {
+            try {
+                studentAnswersList = JSON.parse(savedSub);
+            } catch(e) { studentAnswersList = []; }
+        }
+        
         renderTeacherQuestions();
         renderResultsPreview();
         showStudentInfoModal();
+        
         // تفعيل تبويب الطالب بشكل افتراضي
-        document.querySelector('.tab-btn[data-tab="studentTab"]').click();
+        const studentTabBtn = document.querySelector('.tab-btn[data-tab="studentTab"]');
+        if(studentTabBtn) studentTabBtn.click();
     }
 
     // تبويب المعلم - عند النقر عليه يطلب كلمة المرور إذا لم يكن مصادقاً
     const teacherTabBtn = document.getElementById('teacherTabBtn');
-    teacherTabBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if(isTeacherAuthenticated) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            teacherTabBtn.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById('teacherTab').classList.add('active');
-        } else {
-            promptTeacherPassword((success) => {
-                if(success) {
-                    openTeacherTabAfterAuth();
-                }
-            });
-        }
-    });
+    if(teacherTabBtn) {
+        const newTeacherTabBtn = teacherTabBtn.cloneNode(true);
+        teacherTabBtn.parentNode.replaceChild(newTeacherTabBtn, teacherTabBtn);
+        
+        newTeacherTabBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if(isTeacherAuthenticated) {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                newTeacherTabBtn.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                document.getElementById('teacherTab').classList.add('active');
+            } else {
+                promptTeacherPassword((success) => {
+                    if(success) {
+                        openTeacherTabAfterAuth();
+                    }
+                });
+            }
+        });
+    }
 
     // أحداث الأزرار
-    document.getElementById('addQuestionBtn')?.addEventListener('click', () => {
-        examQuestions.push({questionText: "سؤال مقالي جديد", grade: 5});
-        renderTeacherQuestions();
-        saveAllToLocal();
-        renderStudentQuestionsUI();
-    });
-    document.getElementById('saveExamBtn')?.addEventListener('click', () => {
-        saveAllToLocal();
-        renderStudentQuestionsUI();
-        document.getElementById('teacherMsg').innerHTML = '<span style="color:green;">✅ تم حفظ الأسئلة وإتاحتها للطلاب.</span>';
-        setTimeout(()=> document.getElementById('teacherMsg').innerHTML = '', 2000);
-    });
-    document.getElementById('submitStudentAnswers')?.addEventListener('click', submitFinalExam);
-    document.getElementById('exportGradesBtn')?.addEventListener('click', () => {
-        if(studentAnswersList.length===0) { alert("لا توجد بيانات لتصديرها"); return; }
-        let csvRows = [["اسم الطالب", "الدرجة الكلية"]];
-        studentAnswersList.forEach(s => {
-            let total = s.answers.reduce((sum, a) => sum + (a.manualGrade !== undefined && a.manualGrade !== null ? parseFloat(a.manualGrade) : 0), 0);
-            csvRows.push([s.studentName, total]);
+    const addBtn = document.getElementById('addQuestionBtn');
+    if(addBtn) {
+        addBtn.addEventListener('click', () => {
+            examQuestions.push({questionText: "سؤال مقالي جديد", grade: 5});
+            renderTeacherQuestions();
+            saveAllToLocal();
+            renderStudentQuestionsUI();
         });
-        let csvContent = csvRows.map(row => row.join(",")).join("\n");
-        let blob = new Blob(["\uFEFF" + csvContent], {type: "text/csv;charset=utf-8;"});
-        let link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = "نتائج_الطلاب.csv";
-        link.click();
-        URL.revokeObjectURL(link.href);
-    });
-    document.getElementById('printResultsBtn')?.addEventListener('click', () => {
-        let win = window.open('', '_blank');
-        let html = `<html dir="rtl"><head><title>النتائج</title><style>body{font-family:Tajawal; padding:20px;}</style></head><body><h2>نتائج الطلاب - متوسطة الحسين بن علي</h2>`;
-        studentAnswersList.forEach(s=>{
-            html+=`<div style="border:1px solid #ccc; border-radius:16px; padding:15px; margin-bottom:20px;"><h3>${s.studentName} - ${s.studentGrade}</h3><p>المادة: ${s.studentSubject} | التاريخ: ${s.submittedAt}</p>`;
-            s.answers.forEach((a,i)=>{
-                let final = (a.manualGrade!==undefined && a.manualGrade!==null)? a.manualGrade : "لم تصحح بعد";
-                html+=`<p><strong>س${i+1}:</strong> ${a.questionText}<br>📝 إجابة الطالب: ${a.answerText || "(فارغة)"}<br>⭐ الدرجة المعطاة: ${final} / ${a.gradeValue}</p><hr>`;
+    }
+    
+    const saveBtn = document.getElementById('saveExamBtn');
+    if(saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            saveAllToLocal();
+            renderStudentQuestionsUI();
+            const teacherMsg = document.getElementById('teacherMsg');
+            if(teacherMsg) {
+                teacherMsg.innerHTML = '✅ تم حفظ الأسئلة وإتاحتها للطلاب.';
+                setTimeout(()=> teacherMsg.innerHTML = '', 2000);
+            }
+        });
+    }
+    
+    const submitAnswersBtn = document.getElementById('submitStudentAnswers');
+    if(submitAnswersBtn) {
+        submitAnswersBtn.addEventListener('click', submitFinalExam);
+    }
+    
+    const exportBtn = document.getElementById('exportGradesBtn');
+    if(exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            if(studentAnswersList.length === 0) { alert("لا توجد بيانات لتصديرها"); return; }
+            let csvRows = [["اسم الطالب", "الدرجة الكلية"]];
+            studentAnswersList.forEach(s => {
+                let total = s.answers.reduce((sum, a) => sum + (a.manualGrade !== undefined && a.manualGrade !== null ? parseFloat(a.manualGrade) : 0), 0);
+                csvRows.push([s.studentName, total]);
             });
-            html+=`</div>`;
+            let csvContent = csvRows.map(row => row.join(",")).join("\n");
+            let blob = new Blob(["\uFEFF" + csvContent], {type: "text/csv;charset=utf-8;"});
+            let link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "نتائج_الطلاب.csv";
+            link.click();
+            URL.revokeObjectURL(link.href);
         });
-        html+=`</body></html>`;
-        win.document.write(html);
-        win.document.close();
-        win.print();
-    });
-    document.getElementById('prevAnswerBtn')?.addEventListener('click', () => {
-        if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex-1+studentAnswersList.length)%studentAnswersList.length;
-        renderResultsPreview();
-    });
-    document.getElementById('nextAnswerBtn')?.addEventListener('click', () => {
-        if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex+1)%studentAnswersList.length;
-        renderResultsPreview();
-    });
+    }
+    
+    const printBtn = document.getElementById('printResultsBtn');
+    if(printBtn) {
+        printBtn.addEventListener('click', () => {
+            let win = window.open('', '_blank');
+            let html = `<html dir="rtl"><head><title>النتائج</title><style>body{font-family:Tajawal; padding:20px;}</style></head><body><h2>نتائج الطلاب - متوسطة الحسين بن علي</h2>`;
+            studentAnswersList.forEach(s => {
+                html += `<div style="border:1px solid #ccc; border-radius:16px; padding:15px; margin-bottom:20px;"><h3>${s.studentName} - ${s.studentGrade}</h3><p>المادة: ${s.studentSubject} | التاريخ: ${s.submittedAt}</p>`;
+                s.answers.forEach((a, i) => {
+                    let final = (a.manualGrade !== undefined && a.manualGrade !== null) ? a.manualGrade : "لم تصحح بعد";
+                    html += `<p><strong>س${i+1}:</strong> ${a.questionText}<br>📝 إجابة الطالب: ${a.answerText || "(فارغة)"}<br>⭐ الدرجة المعطاة: ${final} / ${a.gradeValue}</p><hr>`;
+                });
+                html += `</div>`;
+            });
+            html += `</body></html>`;
+            win.document.write(html);
+            win.document.close();
+            win.print();
+        });
+    }
+    
+    const prevBtn = document.getElementById('prevAnswerBtn');
+    if(prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex - 1 + studentAnswersList.length) % studentAnswersList.length;
+            renderResultsPreview();
+        });
+    }
+    
+    const nextBtn = document.getElementById('nextAnswerBtn');
+    if(nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex + 1) % studentAnswersList.length;
+            renderResultsPreview();
+        });
+    }
 
     // بدء التطبيق
     initTeacherTabProtection();
