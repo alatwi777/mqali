@@ -64,6 +64,11 @@
             color: #1e6f3f;
             border-bottom: 3px solid #2e7d32;
         }
+        .tab-btn.disabled-tab {
+            opacity: 0.5;
+            cursor: not-allowed;
+            position: relative;
+        }
         .tab-content { display: none; padding: 30px; background: #ffffff; border-radius: 0 0 2rem 2rem; animation: fadeSlide 0.3s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
@@ -91,6 +96,7 @@
         .btn-primary:hover { background: #0f552f; transform: translateY(-2px); }
         .btn-secondary { background: #ffb74d; color: #3e2a1f; }
         .btn-outline { border: 1.5px solid #2c7a4a; background: white; color: #2c7a4a; }
+        .btn-danger { background: #d32f2f; color: white; }
         .question-item {
             background: #f9fafc;
             border-radius: 24px;
@@ -162,6 +168,7 @@
         .sub-tab-buttons .btn.active-teacher-tab { background: #1e6f3f; color: white; }
         .error-message { color: red; font-size: 0.9rem; margin-top: 10px; }
         .success-message { color: green; font-size: 0.9rem; margin-top: 10px; }
+        .info-message { color: #ff9800; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -195,19 +202,8 @@
     <!-- تبويب المعلم -->
     <div id="teacherTab" class="tab-content">
         <div class="card-panel">
-            <div id="teacherProtectedContent">
-                <div style="text-align: center; padding: 30px;">
-                    <i class="fas fa-lock" style="font-size: 48px; color: #ffb74d;"></i>
-                    <h3>منطقة المعلم محمية</h3>
-                    <p>الرجاء إدخال الرقم السري للوصول إلى لوحة التحكم</p>
-                    <div class="password-prompt">
-                        <input type="password" id="teacherAccessPassword" placeholder="الرقم السري" style="width: 200px; margin: 10px;">
-                        <button id="verifyTeacherAccessBtn" class="btn btn-primary">تأكيد</button>
-                    </div>
-                    <div id="teacherAccessError" class="error-message"></div>
-                </div>
-            </div>
-            <div id="teacherFullPanel" style="display: none;">
+            <!-- محتوى المعلم سيظهر مباشرة ولكن مع إمكانية تعيين الرقم السري -->
+            <div id="teacherFullPanel">
                 <div class="sub-tab-buttons">
                     <button id="teacherQuestionsTabBtn" class="btn">📝 الأسئلة المقالية</button>
                     <button id="teacherResultsTabBtn" class="btn">📊 النتائج والتصحيح</button>
@@ -248,15 +244,15 @@
                 
                 <div id="teacherSettingsPanel" style="display: none;">
                     <div class="card-panel">
-                        <h3><i class="fas fa-key"></i> تغيير الرقم السري للمعلم</h3>
-                        <p>الرقم السري الحالي: <strong id="currentSecretDisplay">••••</strong></p>
+                        <h3><i class="fas fa-key"></i> تعيين / تغيير الرقم السري للمعلم</h3>
+                        <div id="secretStatusMsg" class="info-message"></div>
                         <div style="margin-top: 20px;">
                             <input type="password" id="newSecretInput" placeholder="الرقم السري الجديد" style="width: 200px;">
-                            <button id="changeSecretBtn" class="btn btn-primary">تغيير الرقم السري</button>
+                            <button id="setSecretBtn" class="btn btn-primary"><i class="fas fa-save"></i> تعيين الرقم السري</button>
                         </div>
                         <div id="secretChangeMsg" class="success-message"></div>
                         <div style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 20px;">
-                            <small><i class="fas fa-info-circle"></i> الرقم السري الافتراضي هو <strong>12</strong> (يمكن تغييره من هنا)</small>
+                            <small><i class="fas fa-info-circle"></i> الرجاء تعيين رقم سري لحماية لوحة المعلم. لن يتمكن الطالب من الوصول إلى هذه الصفحة إلا بعد إدخال الرقم السري.</small>
                         </div>
                     </div>
                 </div>
@@ -271,25 +267,10 @@
     let examQuestions = [];
     let studentAnswersList = [];
     let currentAnswerIndex = 0;
-    let teacherSecret = "12";  // الرقم السري الافتراضي
+    let teacherSecret = localStorage.getItem('teacher_secret') || "";  // لا يوجد رقم سري افتراضي
     let isTeacherAuthenticated = false;
     let currentStudentData = { name: "", grade: "", subject: "" };
     let studentSubmitLocked = false;
-
-    // تحميل الرقم السري من localStorage
-    function loadTeacherSecret() {
-        const savedSecret = localStorage.getItem('teacher_secret');
-        if (savedSecret !== null && savedSecret !== "") {
-            teacherSecret = savedSecret;
-        } else {
-            teacherSecret = "12";
-            localStorage.setItem('teacher_secret', "12");
-        }
-        console.log("الرقم السري الحالي:", teacherSecret); // للتأكد
-    }
-
-    // استدعاء دالة تحميل الرقم السري
-    loadTeacherSecret();
 
     // عناصر DOM
     const teacherContainer = document.getElementById('questionsContainerTeacher');
@@ -298,6 +279,7 @@
     const submitBtn = document.getElementById('submitStudentAnswers');
     const studentSubmitMsgDiv = document.getElementById('studentSubmitMsg');
     const studentLockedMsgDiv = document.getElementById('studentLockedMsg');
+    const teacherTabBtn = document.getElementById('teacherTabBtn');
 
     function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;});}
 
@@ -533,16 +515,21 @@
         
         teacherIcon.addEventListener('click', () => {
             modal.remove();
-            promptTeacherPassword((success) => {
-                if(success) {
-                    openTeacherTabAfterAuth();
-                }
-            });
+            // طلب الرقم السري للوصول إلى صفحة المعلم
+            promptTeacherPasswordForAccess();
         });
     }
 
-    // طلب الرقم السري للمعلم - نافذة منبثقة
-    function promptTeacherPassword(callback) {
+    // طلب الرقم السري للمعلم للوصول إلى صفحته
+    function promptTeacherPasswordForAccess() {
+        // التحقق أولاً إذا كان هناك رقم سري معرف أم لا
+        if(!teacherSecret || teacherSecret === "") {
+            alert("⚠️ لم يتم تعيين رقم سري للمعلم بعد. الرجاء الدخول إلى صفحة المعلم أولاً لتعيين رقم سري.");
+            // محاولة فتح تبويب المعلم (بدون حماية لأن الرقم السري لم يعين بعد)
+            openTeacherTabDirectly();
+            return;
+        }
+        
         let passModal = document.createElement('div');
         passModal.className = 'modal-overlay';
         passModal.innerHTML = `
@@ -564,10 +551,9 @@
         
         const checkPassword = () => {
             const entered = passInput.value.trim();
-            const secret = teacherSecret.toString().trim();
-            if(entered === secret) {
+            if(entered === teacherSecret) {
                 passModal.remove();
-                if(callback) callback(true);
+                openTeacherTabDirectly();
             } else {
                 errorDiv.innerText = '❌ الرقم السري غير صحيح';
             }
@@ -575,97 +561,50 @@
         submitBtnModal.addEventListener('click', checkPassword);
         cancelBtn.addEventListener('click', () => {
             passModal.remove();
-            if(callback) callback(false);
         });
         passInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkPassword(); });
     }
 
-    function openTeacherTabAfterAuth() {
+    function openTeacherTabDirectly() {
         // تفعيل تبويب المعلم
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('teacherTabBtn').classList.add('active');
+        teacherTabBtn.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.getElementById('teacherTab').classList.add('active');
-        
-        // إخفاء شاشة القفل وإظهار المحتوى
-        const protectedContent = document.getElementById('teacherProtectedContent');
-        const fullPanel = document.getElementById('teacherFullPanel');
-        if(protectedContent) protectedContent.style.display = 'none';
-        if(fullPanel) fullPanel.style.display = 'block';
-        
         isTeacherAuthenticated = true;
         renderTeacherQuestions();
         renderResultsPreview();
     }
 
-    function initTeacherTabProtection() {
-        const verifyBtn = document.getElementById('verifyTeacherAccessBtn');
-        const passInput = document.getElementById('teacherAccessPassword');
-        const errorDiv = document.getElementById('teacherAccessError');
-        
-        if(verifyBtn) {
-            // إزالة أي مستمعين سابقين
-            const newVerifyBtn = verifyBtn.cloneNode(true);
-            verifyBtn.parentNode.replaceChild(newVerifyBtn, verifyBtn);
-            
-            newVerifyBtn.addEventListener('click', () => {
-                const entered = passInput.value.trim();
-                const secret = teacherSecret.toString().trim();
-                console.log("محاولة الدخول:", entered, "السر:", secret); // للتأكد
-                if(entered === secret) {
-                    const protectedContent = document.getElementById('teacherProtectedContent');
-                    const fullPanel = document.getElementById('teacherFullPanel');
-                    if(protectedContent) protectedContent.style.display = 'none';
-                    if(fullPanel) fullPanel.style.display = 'block';
-                    if(errorDiv) errorDiv.innerText = '';
-                    isTeacherAuthenticated = true;
-                    renderTeacherQuestions();
-                    renderResultsPreview();
-                } else {
-                    if(errorDiv) errorDiv.innerText = '❌ الرقم السري غير صحيح';
-                }
-            });
-            
-            if(passInput) {
-                passInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') newVerifyBtn.click(); });
-            }
-        }
-    }
-
-    function initSettings() {
-        const changeBtn = document.getElementById('changeSecretBtn');
+    // تعيين الرقم السري من داخل صفحة المعلم
+    function setupSecretSettings() {
+        const setSecretBtn = document.getElementById('setSecretBtn');
         const newSecretInput = document.getElementById('newSecretInput');
         const secretChangeMsg = document.getElementById('secretChangeMsg');
-        const currentSecretDisplay = document.getElementById('currentSecretDisplay');
+        const secretStatusMsg = document.getElementById('secretStatusMsg');
         
-        if(currentSecretDisplay) {
-            currentSecretDisplay.innerText = '•'.repeat(teacherSecret.length);
+        // عرض الحالة الحالية
+        if(teacherSecret && teacherSecret !== "") {
+            secretStatusMsg.innerHTML = '<i class="fas fa-check-circle"></i> الرقم السري مُعيّن حالياً. يمكنك تغييره من هنا.';
+            secretStatusMsg.style.color = "green";
+        } else {
+            secretStatusMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> لم يتم تعيين رقم سري بعد. الرجاء تعيين رقم سري لحماية لوحة المعلم.';
+            secretStatusMsg.style.color = "orange";
         }
         
-        if(changeBtn) {
-            // إزالة أي مستمعين سابقين
-            const newChangeBtn = changeBtn.cloneNode(true);
-            changeBtn.parentNode.replaceChild(newChangeBtn, changeBtn);
-            
-            newChangeBtn.addEventListener('click', () => {
+        if(setSecretBtn) {
+            setSecretBtn.addEventListener('click', () => {
                 let newPass = newSecretInput.value.trim();
                 if(newPass && newPass.length > 0) {
                     teacherSecret = newPass;
                     localStorage.setItem('teacher_secret', teacherSecret);
-                    if(secretChangeMsg) {
-                        secretChangeMsg.innerHTML = '<span style="color:green;">✅ تم تغيير الرقم السري بنجاح</span>';
-                    }
+                    secretChangeMsg.innerHTML = '✅ تم تعيين / تغيير الرقم السري بنجاح';
+                    secretStatusMsg.innerHTML = '<i class="fas fa-check-circle"></i> الرقم السري مُعيّن حالياً.';
+                    secretStatusMsg.style.color = "green";
                     newSecretInput.value = '';
-                    if(currentSecretDisplay) {
-                        currentSecretDisplay.innerText = '•'.repeat(teacherSecret.length);
-                    }
-                    setTimeout(() => {
-                        if(secretChangeMsg) secretChangeMsg.innerHTML = '';
-                    }, 3000);
+                    setTimeout(() => secretChangeMsg.innerHTML = '', 3000);
                 } else {
-                    if(secretChangeMsg) {
-                        secretChangeMsg.innerHTML = '<span style="color:red;">⚠️ الرجاء إدخال رقم سري صالح</span>';
-                    }
+                    secretChangeMsg.innerHTML = '<span style="color:red;">⚠️ الرجاء إدخال رقم سري صالح</span>';
                 }
             });
         }
@@ -711,6 +650,7 @@
                 if(settingsPanel) settingsPanel.style.display = 'block';
                 removeActiveClass();
                 settingsTab.classList.add('active-teacher-tab');
+                setupSecretSettings(); // تحديث حالة الرقم السري عند فتح الإعدادات
             });
         }
         
@@ -746,25 +686,25 @@
         if(studentTabBtn) studentTabBtn.click();
     }
 
-    // تبويب المعلم - عند النقر عليه يطلب كلمة المرور إذا لم يكن مصادقاً
-    const teacherTabBtn = document.getElementById('teacherTabBtn');
+    // إدارة تبويب المعلم - يطلب الرقم السري عند النقر (إذا كان معرفاً)
     if(teacherTabBtn) {
-        const newTeacherTabBtn = teacherTabBtn.cloneNode(true);
-        teacherTabBtn.parentNode.replaceChild(newTeacherTabBtn, teacherTabBtn);
-        
-        newTeacherTabBtn.addEventListener('click', (e) => {
+        teacherTabBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if(isTeacherAuthenticated) {
+                // إذا كان مصادقاً بالفعل، فقط افتح التبويب
                 document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                newTeacherTabBtn.classList.add('active');
+                teacherTabBtn.classList.add('active');
                 document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
                 document.getElementById('teacherTab').classList.add('active');
             } else {
-                promptTeacherPassword((success) => {
-                    if(success) {
-                        openTeacherTabAfterAuth();
-                    }
-                });
+                // طلب الرقم السري
+                if(!teacherSecret || teacherSecret === "") {
+                    alert("⚠️ لم يتم تعيين رقم سري للمعلم بعد. الرجاء تعيين رقم سري أولاً من خلال الإعدادات.");
+                    // فتح تبويب المعلم مباشرة لتعيين الرقم السري (بدون حماية لأنه لا يوجد رقم سري بعد)
+                    openTeacherTabDirectly();
+                } else {
+                    promptTeacherPasswordForAccess();
+                }
             }
         });
     }
@@ -854,9 +794,8 @@
     }
 
     // بدء التطبيق
-    initTeacherTabProtection();
-    initSettings();
     initTeacherSubTabs();
+    setupSecretSettings();
     loadInitialData();
 </script>
 </body>
