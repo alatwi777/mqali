@@ -25,7 +25,6 @@
             margin: 0 auto;
         }
 
-        /* أزرار التبويب */
         .tabs-container {
             display: flex;
             gap: 12px;
@@ -59,7 +58,6 @@
             display: block;
         }
 
-        /* لوحة التحرير */
         .editor-panel {
             background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(2px);
@@ -170,6 +168,7 @@
             margin-left: 0.8rem;
         }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,0.12); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         .btn-secondary {
             background: #edf3fc;
@@ -198,7 +197,6 @@
             margin-top: 8px;
         }
 
-        /* ورقة الاختبار */
         .exam-paper {
             background: white;
             border-radius: 28px;
@@ -371,6 +369,15 @@
             border-radius: 2rem;
             color: #6f8fae;
         }
+        .auto-save-badge {
+            font-size: 0.7rem;
+            color: #2e7d64;
+            margin-right: 15px;
+            background: #e0f0ea;
+            padding: 2px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .editor-panel, .action-bar, .tabs-container, .tab-btn, .no-print, .exam-actions, .small-btn, .saved-exams-list, .btn-primary, .btn-secondary {
@@ -381,15 +388,6 @@
             @page { size: A4; margin: 1.2cm; }
         }
         footer { font-size: 0.7rem; text-align: center; margin-top: 24px; color: #2e577b; }
-        .auto-save-badge {
-            font-size: 0.7rem;
-            color: #2e7d64;
-            margin-right: 15px;
-            background: #e0f0ea;
-            padding: 2px 10px;
-            border-radius: 20px;
-            display: inline-block;
-        }
     </style>
 </head>
 <body>
@@ -399,7 +397,6 @@
         <button class="tab-btn" data-tab="saved">📚 الاختبارات التي أنشأتها</button>
     </div>
 
-    <!-- تبويب إنشاء الاختبار -->
     <div id="createTab" class="tab-content active-tab">
         <div class="editor-panel">
             <h2 style="color:#1e3a5f; margin-bottom: 1rem;">📝 متوسطة الحسين بن علي | منشئ الاختبارات <span class="auto-save-badge">💾 حفظ تلقائي</span></h2>
@@ -411,7 +408,10 @@
                 <div class="input-group"><label>👤 اسم الطالب</label><input type="text" id="studentName" placeholder="اسم الطالب"></div>
                 <div class="input-group"><label>⭐ المجموع الكلي</label><input type="text" id="totalScoreInput" value="30"></div>
             </div>
-            <div><h3>✍️ الأسئلة المقالية</h3><span id="questionCounterDisplay" style="background:#eef2fa; padding:5px 16px; border-radius:50px; margin-right:10px;">0/15</span></div>
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                <h3 style="color:#1f4970;">✍️ الأسئلة المقالية</h3>
+                <span id="questionCounterDisplay" style="background:#eef2fa; padding:5px 16px; border-radius:50px;">0/15</span>
+            </div>
             <div id="dynamicQuestionsContainer"></div>
             <div class="action-bar">
                 <button id="addQuestionBtn" class="btn-primary">➕ إضافة سؤال</button>
@@ -422,318 +422,414 @@
             </div>
             <div id="maxWarning" class="warning-limit"></div>
         </div>
-        <div class="preview-title no-print" style="margin-top:20px;">📄 معاينة ورقة الاختبار</div>
+        <div class="preview-title no-print" style="margin-top:20px; font-size:1.3rem; font-weight:bold;">📄 معاينة ورقة الاختبار</div>
         <div id="examPaperPreview" class="exam-paper">جاري المعاينة...</div>
     </div>
 
-    <!-- تبويب الاختبارات المحفوظة -->
     <div id="savedTab" class="tab-content">
         <div class="editor-panel" style="min-height: 400px;">
             <h2 style="color:#1e3a5f;">📚 الاختبارات التي قمت بإنشائها</h2>
             <div id="savedExamsList" class="saved-exams-list"></div>
         </div>
     </div>
-    <footer class="no-print">✧ حفظ تلقائي لجميع البيانات (الأسئلة والمعلومات) | أزرار التصدير والطباعة والنسخ الاحتياطي تعمل بكامل طاقتها ✧</footer>
+    <footer class="no-print">✧ حفظ تلقائي لجميع البيانات | أزرار إضافة الأسئلة والتصدير تعمل بشكل كامل ✧</footer>
 </div>
 
 <script>
-    // ----------------------------------- متغيرات الحالة -----------------------------------
-    let questionsList = [];
-    let autoSaveTimer = null;
-    
-    // عناصر DOM
-    const container = document.getElementById('dynamicQuestionsContainer');
-    const examPreviewDiv = document.getElementById('examPaperPreview');
-    const addBtn = document.getElementById('addQuestionBtn');
-    const saveExamBtn = document.getElementById('saveExamBtn');
-    const exportImageBtn = document.getElementById('exportImageBtn');
-    const exportPdfBtn = document.getElementById('exportPdfBtn');
-    const printBtn = document.getElementById('printBtn');
-    const questionCounterSpan = document.getElementById('questionCounterDisplay');
-    const examNameInput = document.getElementById('examName');
-    const subjectInput = document.getElementById('subject');
-    const semesterInput = document.getElementById('semester');
-    const schoolNameInput = document.getElementById('schoolName');
-    const studentNameInput = document.getElementById('studentName');
-    const totalScoreInput = document.getElementById('totalScoreInput');
-    const maxWarningSpan = document.getElementById('maxWarning');
-
-    // ----------------------------------- وظائف الحفظ التلقائي -----------------------------------
-    function saveCurrentStateToLocal() {
-        const state = {
-            questionsList: questionsList,
-            examName: examNameInput.value,
-            subject: subjectInput.value,
-            semester: semesterInput.value,
-            schoolName: schoolNameInput.value,
-            studentName: studentNameInput.value,
-            totalScore: totalScoreInput.value
-        };
-        localStorage.setItem('autoSaveExamState', JSON.stringify(state));
-    }
-
-    function loadAutoSaveState() {
-        const saved = localStorage.getItem('autoSaveExamState');
-        if (saved) {
-            try {
-                const state = JSON.parse(saved);
-                if (state.questionsList && Array.isArray(state.questionsList) && state.questionsList.length > 0) {
-                    questionsList = state.questionsList;
-                } else if (state.questionsList && state.questionsList.length === 0) {
-                    questionsList = ["اشرح مفهوم المواطنة وأهميتها.", "ما أثر العلم في بناء المجتمعات؟"];
-                }
-                if (questionsList.length === 0) questionsList = ["اشرح مفهوم المواطنة وأهميتها.", "ما أثر العلم في بناء المجتمعات؟"];
-                examNameInput.value = state.examName || "الاختبار النهائي";
-                subjectInput.value = state.subject || "التربية الإسلامية";
-                semesterInput.value = state.semester || "الفصل الدراسي الثاني";
-                schoolNameInput.value = state.schoolName || "متوسطة الحسين بن علي";
-                studentNameInput.value = state.studentName || "";
-                totalScoreInput.value = state.totalScore || "30";
-            } catch(e) { console.error(e); }
-        }
-        if (!questionsList.length) questionsList = ["اشرح مفهوم المواطنة وأهميتها.", "ما أثر العلم في بناء المجتمعات؟"];
-        if (!examNameInput.value) examNameInput.value = "الاختبار النهائي";
-        if (!subjectInput.value) subjectInput.value = "التربية الإسلامية";
-        if (!semesterInput.value) semesterInput.value = "الفصل الدراسي الثاني";
-        if (!schoolNameInput.value) schoolNameInput.value = "متوسطة الحسين بن علي";
-        if (!totalScoreInput.value) totalScoreInput.value = "30";
-    }
-
-    function triggerAutoSave() {
-        if (autoSaveTimer) clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => {
-            saveCurrentStateToLocal();
-        }, 300);
-    }
-
-    // ----------------------------------- وظائف المعاينة -----------------------------------
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-
-    function generateExamHTML(examData, studentNameOverride = null) {
-        const name = examData.name || "اختبار";
-        const subject = examData.subject || "—";
-        const semester = examData.semester || "—";
-        const school = examData.school || "متوسطة الحسين بن علي";
-        let student = (studentNameOverride !== null) ? studentNameOverride : (examData.studentName || "");
-        const total = examData.totalScore || "30";
-        const questions = examData.questions || [];
+    (function() {
+        // ---------- المتغيرات العامة ----------
+        let questionsList = [];
+        let savedExams = [];
         
-        const fractionBox = `<div class="total-score-fraction"><div class="score-label-small">درجة الطالب</div><div class="fraction"><div class="numerator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div><div class="denominator">${escapeHtml(total)}</div></div><div style="font-size:0.65rem;">يكتبها المعلم</div></div>`;
-        const infoHTML = `<div class="exam-info-block"><div class="info-left-group">
-            <div class="info-chip"><strong>📋 الاختبار:</strong> ${escapeHtml(name)}</div>
-            <div class="info-chip"><strong>📚 المادة:</strong> ${escapeHtml(subject)}</div>
-            <div class="info-chip"><strong>🗓️ الفصل:</strong> ${escapeHtml(semester)}</div>
-            <div class="info-chip"><strong>🏫 المدرسة:</strong> ${escapeHtml(school)}</div>
-        </div>${fractionBox}</div>`;
-        const studentRow = `<div class="student-info-row"><div class="student-name-field"><span>👨‍🎓 اسم الطالب :</span> <span class="student-name-value">${escapeHtml(student)}</span></div></div>`;
-        let questionsHTML = `<div class="answer-title">📌 أجب عن الأسئلة التالية :</div><div class="questions-list-preview">`;
-        if(questions.length === 0) questionsHTML += `<div style="padding:1rem;">لا توجد أسئلة</div>`;
-        else { questions.forEach((q, idx) => { questionsHTML += `<div class="preview-question"><div class="preview-q-num">${idx+1}</div><div class="preview-q-text">${escapeHtml(q)}</div></div>`; }); }
-        questionsHTML += `</div><div style="margin-top:2rem; border-top:1px solid #e2edf7; padding-top:1rem; font-size:0.8rem;">📝 مساحة الإجابة</div>`;
-        return infoHTML + studentRow + questionsHTML;
-    }
+        // عناصر DOM
+        const container = document.getElementById('dynamicQuestionsContainer');
+        const examPreviewDiv = document.getElementById('examPaperPreview');
+        const addQuestionBtn = document.getElementById('addQuestionBtn');
+        const saveExamBtn = document.getElementById('saveExamBtn');
+        const exportImageBtn = document.getElementById('exportImageBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const printBtn = document.getElementById('printBtn');
+        const questionCounterSpan = document.getElementById('questionCounterDisplay');
+        const examNameInput = document.getElementById('examName');
+        const subjectInput = document.getElementById('subject');
+        const semesterInput = document.getElementById('semester');
+        const schoolNameInput = document.getElementById('schoolName');
+        const studentNameInput = document.getElementById('studentName');
+        const totalScoreInput = document.getElementById('totalScoreInput');
+        const maxWarningSpan = document.getElementById('maxWarning');
 
-    function renderPreview() {
-        const examData = {
-            name: examNameInput.value,
-            subject: subjectInput.value,
-            semester: semesterInput.value,
-            school: schoolNameInput.value,
-            studentName: studentNameInput.value,
-            totalScore: totalScoreInput.value,
-            questions: questionsList
-        };
-        examPreviewDiv.innerHTML = generateExamHTML(examData);
-    }
-
-    // ----------------------------------- محرر الأسئلة (مع حفظ تلقائي) -----------------------------------
-    function updateCounter() {
-        const len = questionsList.length;
-        questionCounterSpan.innerText = `${len}/15`;
-        if(len >= 15) { maxWarningSpan.innerText = "⚠️ الحد الأقصى 15 سؤال، تم الوصول للنهاية."; addBtn.disabled = true; addBtn.style.opacity = "0.6"; }
-        else { maxWarningSpan.innerText = ""; addBtn.disabled = false; addBtn.style.opacity = "1"; }
-        triggerAutoSave();
-    }
-
-    function renderQuestionsEditor() {
-        if (!container) return;
-        container.innerHTML = '';
-        for (let i = 0; i < questionsList.length; i++) {
-            const qDiv = document.createElement('div'); qDiv.className = 'question-item';
-            const numSpan = document.createElement('span'); numSpan.className = 'question-number'; numSpan.innerText = i+1;
-            const textDiv = document.createElement('div'); textDiv.className = 'question-text';
-            const textarea = document.createElement('textarea'); textarea.rows = 2; textarea.value = questionsList[i];
-            textarea.placeholder = `نص السؤال المقالي ${i+1} ...`;
-            textarea.addEventListener('input', ((idx) => (e) => {
-                questionsList[idx] = e.target.value;
-                renderPreview();
-                triggerAutoSave();
-            }))(i);
-            textDiv.appendChild(textarea);
-            const removeBtn = document.createElement('button'); removeBtn.innerText = '✖ حذف'; removeBtn.className = 'remove-question';
-            removeBtn.addEventListener('click', ((idx) => () => {
-                if (questionsList.length === 1) { alert("⚠️ يجب أن يبقى سؤال واحد على الأقل في الورقة."); return; }
-                questionsList.splice(idx, 1);
-                renderQuestionsEditor();
-                updateCounter();
-                renderPreview();
-                triggerAutoSave();
-            }))(i);
-            qDiv.appendChild(numSpan); qDiv.appendChild(textDiv); qDiv.appendChild(removeBtn);
-            container.appendChild(qDiv);
+        // ---------- دوال مساعدة ----------
+        function escapeHtml(str) { 
+            if(!str) return ''; 
+            return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); 
         }
-        updateCounter();
-    }
 
-    function addNewQuestion() {
-        if (questionsList.length >= 15) { alert("لا يمكن إضافة أكثر من 15 سؤالاً."); return; }
-        questionsList.push("سؤال مقالي جديد: اكتب نص السؤال هنا...");
-        renderQuestionsEditor();
-        renderPreview();
-        triggerAutoSave();
-    }
+        function updateCounter() {
+            const len = questionsList.length;
+            questionCounterSpan.innerText = `${len}/15`;
+            if(len >= 15) { 
+                maxWarningSpan.innerText = "⚠️ الحد الأقصى 15 سؤال، تم الوصول للنهاية."; 
+                addQuestionBtn.disabled = true; 
+                addQuestionBtn.style.opacity = "0.6"; 
+            } else { 
+                maxWarningSpan.innerText = ""; 
+                addQuestionBtn.disabled = false; 
+                addQuestionBtn.style.opacity = "1"; 
+            }
+        }
 
-    // ----------------------------------- حفظ الاختبار في المكتبة (التبويب الثاني) -----------------------------------
-    let savedExams = [];
-    function loadSavedExamsFromStorage() {
-        const stored = localStorage.getItem('savedExams');
-        if(stored) savedExams = JSON.parse(stored);
-        else savedExams = [];
-        renderSavedExamsList();
-    }
-    function saveExamsToStorage() { localStorage.setItem('savedExams', JSON.stringify(savedExams)); renderSavedExamsList(); }
-    
-    function saveCurrentExamToLibrary() {
-        const examName = examNameInput.value.trim();
-        if(!examName) { alert("الرجاء إدخال اسم الاختبار قبل الحفظ"); return; }
-        if(questionsList.length === 0) { alert("لا توجد أسئلة لحفظها"); return; }
-        const examData = {
-            id: Date.now(),
-            name: examName,
-            subject: subjectInput.value,
-            semester: semesterInput.value,
-            school: schoolNameInput.value,
-            studentName: studentNameInput.value,
-            totalScore: totalScoreInput.value,
-            questions: [...questionsList]
-        };
-        savedExams.push(examData);
-        saveExamsToStorage();
-        alert(`✓ تم حفظ الاختبار "${examName}" في قائمة الاختبارات المحفوظة`);
-    }
+        // حفظ تلقائي للحالة الحالية
+        function saveAutoSaveState() {
+            const state = {
+                questionsList: questionsList,
+                examName: examNameInput.value,
+                subject: subjectInput.value,
+                semester: semesterInput.value,
+                schoolName: schoolNameInput.value,
+                studentName: studentNameInput.value,
+                totalScore: totalScoreInput.value
+            };
+            localStorage.setItem('autoSaveExamState', JSON.stringify(state));
+        }
 
-    function renderSavedExamsList() {
-        const listDiv = document.getElementById('savedExamsList');
-        if(!listDiv) return;
-        if(savedExams.length === 0) { listDiv.innerHTML = '<div class="empty-msg">📭 لا توجد اختبارات محفوظة. قم بإنشاء اختبار وحفظه أولاً.</div>'; return; }
-        let html = '';
-        savedExams.forEach(exam => {
-            html += `<div class="exam-card" data-id="${exam.id}"><div class="exam-info"><strong>${escapeHtml(exam.name)}</strong> &nbsp;| ${escapeHtml(exam.subject)} | الفصل: ${escapeHtml(exam.semester)}</div>
-            <div class="exam-actions"><button class="small-btn print" data-id="${exam.id}">🖨️ طباعة</button><button class="small-btn pdf" data-id="${exam.id}">📑 PDF</button></div></div>`;
-        });
-        listDiv.innerHTML = html;
-        document.querySelectorAll('.small-btn.print').forEach(btn => { btn.addEventListener('click', (e) => { const id = parseInt(btn.getAttribute('data-id')); const exam = savedExams.find(ex => ex.id === id); if(exam) printExamFromData(exam); }); });
-        document.querySelectorAll('.small-btn.pdf').forEach(btn => { btn.addEventListener('click', async (e) => { const id = parseInt(btn.getAttribute('data-id')); const exam = savedExams.find(ex => ex.id === id); if(exam) await exportExamAsPDF(exam); }); });
-    }
+        function loadAutoSaveState() {
+            const saved = localStorage.getItem('autoSaveExamState');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    if (state.questionsList && Array.isArray(state.questionsList) && state.questionsList.length > 0) {
+                        questionsList = state.questionsList;
+                    } else {
+                        questionsList = ["اشرح مفهوم المواطنة وأهميتها.", "ما أثر العلم في بناء المجتمعات؟"];
+                    }
+                    examNameInput.value = state.examName || "الاختبار النهائي";
+                    subjectInput.value = state.subject || "التربية الإسلامية";
+                    semesterInput.value = state.semester || "الفصل الدراسي الثاني";
+                    schoolNameInput.value = state.schoolName || "متوسطة الحسين بن علي";
+                    studentNameInput.value = state.studentName || "";
+                    totalScoreInput.value = state.totalScore || "30";
+                } catch(e) { console.error(e); }
+            }
+            if (!questionsList.length) questionsList = ["اشرح مفهوم المواطنة وأهميتها.", "ما أثر العلم في بناء المجتمعات؟"];
+        }
 
-    async function exportExamAsPDF(exam) {
-        const tempDiv = document.createElement('div'); tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px'; tempDiv.style.top = '-9999px'; tempDiv.style.width = '800px'; tempDiv.style.background = 'white'; tempDiv.style.padding = '20px';
-        tempDiv.innerHTML = generateExamHTML(exam, exam.studentName);
-        document.body.appendChild(tempDiv);
-        try {
-            const canvas = await html2canvas(tempDiv, { scale: 2.5, backgroundColor: '#ffffff' });
+        // توليد HTML للورقة
+        function generateExamHTML(examData, studentNameOverride = null) {
+            const name = examData.name || "اختبار";
+            const subject = examData.subject || "—";
+            const semester = examData.semester || "—";
+            const school = examData.school || "متوسطة الحسين بن علي";
+            let student = (studentNameOverride !== null) ? studentNameOverride : (examData.studentName || "");
+            const total = examData.totalScore || "30";
+            const questions = examData.questions || [];
+            
+            const fractionBox = `<div class="total-score-fraction"><div class="score-label-small">درجة الطالب</div><div class="fraction"><div class="numerator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div><div class="denominator">${escapeHtml(total)}</div></div><div style="font-size:0.65rem;">يكتبها المعلم</div></div>`;
+            const infoHTML = `<div class="exam-info-block"><div class="info-left-group">
+                <div class="info-chip"><strong>📋 الاختبار:</strong> ${escapeHtml(name)}</div>
+                <div class="info-chip"><strong>📚 المادة:</strong> ${escapeHtml(subject)}</div>
+                <div class="info-chip"><strong>🗓️ الفصل:</strong> ${escapeHtml(semester)}</div>
+                <div class="info-chip"><strong>🏫 المدرسة:</strong> ${escapeHtml(school)}</div>
+            </div>${fractionBox}</div>`;
+            const studentRow = `<div class="student-info-row"><div class="student-name-field"><span>👨‍🎓 اسم الطالب :</span> <span class="student-name-value">${escapeHtml(student)}</span></div></div>`;
+            let questionsHTML = `<div class="answer-title">📌 أجب عن الأسئلة التالية :</div><div class="questions-list-preview">`;
+            if(questions.length === 0) questionsHTML += `<div style="padding:1rem;">لا توجد أسئلة</div>`;
+            else { questions.forEach((q, idx) => { questionsHTML += `<div class="preview-question"><div class="preview-q-num">${idx+1}</div><div class="preview-q-text">${escapeHtml(q)}</div></div>`; }); }
+            questionsHTML += `</div><div style="margin-top:2rem; border-top:1px solid #e2edf7; padding-top:1rem; font-size:0.8rem;">📝 مساحة الإجابة</div>`;
+            return infoHTML + studentRow + questionsHTML;
+        }
+
+        function renderPreview() {
+            const examData = {
+                name: examNameInput.value,
+                subject: subjectInput.value,
+                semester: semesterInput.value,
+                school: schoolNameInput.value,
+                studentName: studentNameInput.value,
+                totalScore: totalScoreInput.value,
+                questions: questionsList
+            };
+            examPreviewDiv.innerHTML = generateExamHTML(examData);
+        }
+
+        // ---------- عرض المحرر ----------
+        function renderQuestionsEditor() {
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < questionsList.length; i++) {
+                const qDiv = document.createElement('div'); 
+                qDiv.className = 'question-item';
+                const numSpan = document.createElement('span'); 
+                numSpan.className = 'question-number'; 
+                numSpan.innerText = i + 1;
+                const textDiv = document.createElement('div'); 
+                textDiv.className = 'question-text';
+                const textarea = document.createElement('textarea'); 
+                textarea.rows = 2; 
+                textarea.value = questionsList[i];
+                textarea.placeholder = `نص السؤال المقالي ${i+1} ...`;
+                
+                // ربط التغيير
+                textarea.addEventListener('input', (function(idx) {
+                    return function(e) {
+                        questionsList[idx] = e.target.value;
+                        renderPreview();
+                        saveAutoSaveState();
+                    };
+                })(i));
+                
+                textDiv.appendChild(textarea);
+                const removeBtn = document.createElement('button'); 
+                removeBtn.innerText = '✖ حذف'; 
+                removeBtn.className = 'remove-question';
+                removeBtn.addEventListener('click', (function(idx) {
+                    return function() {
+                        if (questionsList.length === 1) { 
+                            alert("⚠️ يجب أن يبقى سؤال واحد على الأقل في الورقة."); 
+                            return; 
+                        }
+                        questionsList.splice(idx, 1);
+                        renderQuestionsEditor();
+                        updateCounter();
+                        renderPreview();
+                        saveAutoSaveState();
+                    };
+                })(i));
+                
+                qDiv.appendChild(numSpan); 
+                qDiv.appendChild(textDiv); 
+                qDiv.appendChild(removeBtn);
+                container.appendChild(qDiv);
+            }
+            updateCounter();
+        }
+
+        // ---------- إضافة سؤال (الوظيفة الأساسية التي كانت لا تعمل) ----------
+        function addNewQuestion() {
+            if (questionsList.length >= 15) { 
+                alert("لا يمكن إضافة أكثر من 15 سؤالاً (الحد الأقصى للصفحة الواحدة)."); 
+                return; 
+            }
+            questionsList.push("سؤال مقالي جديد: اكتب نص السؤال هنا...");
+            renderQuestionsEditor();  // إعادة بناء واجهة الأسئلة
+            renderPreview();          // تحديث المعاينة
+            saveAutoSaveState();      // حفظ تلقائي
+        }
+
+        // ---------- حفظ الاختبار في المكتبة ----------
+        function loadSavedExamsFromStorage() {
+            const stored = localStorage.getItem('savedExams');
+            if(stored) savedExams = JSON.parse(stored);
+            else savedExams = [];
+            renderSavedExamsList();
+        }
+        
+        function saveExamsToStorage() { 
+            localStorage.setItem('savedExams', JSON.stringify(savedExams)); 
+            renderSavedExamsList(); 
+        }
+        
+        function saveCurrentExamToLibrary() {
+            const examName = examNameInput.value.trim();
+            if(!examName) { alert("الرجاء إدخال اسم الاختبار قبل الحفظ"); return; }
+            if(questionsList.length === 0) { alert("لا توجد أسئلة لحفظها"); return; }
+            const examData = {
+                id: Date.now(),
+                name: examName,
+                subject: subjectInput.value,
+                semester: semesterInput.value,
+                school: schoolNameInput.value,
+                studentName: studentNameInput.value,
+                totalScore: totalScoreInput.value,
+                questions: [...questionsList]
+            };
+            savedExams.push(examData);
+            saveExamsToStorage();
+            alert(`✓ تم حفظ الاختبار "${examName}" في قائمة الاختبارات المحفوظة`);
+        }
+        
+        function renderSavedExamsList() {
+            const listDiv = document.getElementById('savedExamsList');
+            if(!listDiv) return;
+            if(savedExams.length === 0) { 
+                listDiv.innerHTML = '<div class="empty-msg">📭 لا توجد اختبارات محفوظة. قم بإنشاء اختبار وحفظه أولاً.</div>'; 
+                return; 
+            }
+            let html = '';
+            savedExams.forEach(exam => {
+                html += `<div class="exam-card" data-id="${exam.id}">
+                    <div class="exam-info"><strong>${escapeHtml(exam.name)}</strong> &nbsp;| ${escapeHtml(exam.subject)} | الفصل: ${escapeHtml(exam.semester)}</div>
+                    <div class="exam-actions">
+                        <button class="small-btn print" data-id="${exam.id}">🖨️ طباعة</button>
+                        <button class="small-btn pdf" data-id="${exam.id}">📑 PDF</button>
+                    </div>
+                </div>`;
+            });
+            listDiv.innerHTML = html;
+            
+            // ربط أزرار الطباعة و PDF
+            document.querySelectorAll('.small-btn.print').forEach(btn => {
+                btn.addEventListener('click', (e) => { 
+                    const id = parseInt(btn.getAttribute('data-id')); 
+                    const exam = savedExams.find(ex => ex.id === id); 
+                    if(exam) printExamFromData(exam); 
+                });
+            });
+            document.querySelectorAll('.small-btn.pdf').forEach(btn => {
+                btn.addEventListener('click', async (e) => { 
+                    const id = parseInt(btn.getAttribute('data-id')); 
+                    const exam = savedExams.find(ex => ex.id === id); 
+                    if(exam) await exportExamAsPDF(exam); 
+                });
+            });
+        }
+        
+        async function exportExamAsPDF(exam) {
+            const tempDiv = document.createElement('div'); 
+            tempDiv.style.position = 'absolute'; 
+            tempDiv.style.left = '-9999px'; 
+            tempDiv.style.top = '-9999px'; 
+            tempDiv.style.width = '800px'; 
+            tempDiv.style.background = 'white'; 
+            tempDiv.style.padding = '20px';
+            tempDiv.innerHTML = generateExamHTML(exam, exam.studentName);
+            document.body.appendChild(tempDiv);
+            try {
+                const canvas = await html2canvas(tempDiv, { scale: 2.5, backgroundColor: '#ffffff' });
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const imgWidth = 210; 
+                const pageHeight = 297; 
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let pdf = new jsPDF('p', 'mm', 'a4');
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                let heightLeft = imgHeight - pageHeight; 
+                let position = -pageHeight;
+                while (heightLeft > 0) { 
+                    position = heightLeft - imgHeight; 
+                    pdf.addPage(); 
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); 
+                    heightLeft -= pageHeight; 
+                }
+                pdf.save(`${exam.name}_${Date.now()}.pdf`);
+            } catch(err) { alert("خطأ في تصدير PDF"); } 
+            finally { document.body.removeChild(tempDiv); }
+        }
+        
+        function printExamFromData(exam) {
+            const htmlContent = generateExamHTML(exam, exam.studentName);
+            const win = window.open('', '_blank');
+            win.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>طباعة الاختبار</title><style>'+
+                '*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI","Cairo";direction:rtl;} body{padding:0.7cm;background:white;}'+
+                '.exam-paper{max-width:100%;margin:auto;}.exam-info-block{background:#ecf2f9;border-radius:1rem;padding:0.8rem 1rem;display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:1.5rem;}'+
+                '.total-score-fraction{background:#fff;border-radius:0.8rem;padding:0.2rem 0.8rem;}.fraction{display:inline-flex;flex-direction:column;align-items:center;}'+
+                '.numerator{border-bottom:2px solid #2c6e2c;font-size:1.3rem;font-weight:bold;min-width:50px;}.student-info-row{background:#f5f9fe;border-radius:1rem;padding:0.5rem 1rem;margin-bottom:1rem;}'+
+                '.answer-title{font-size:1.1rem;font-weight:bold;margin:1rem 0 1rem 0;border-right:4px solid #2c6e9e;padding-right:0.5rem;}'+
+                '.preview-question{display:flex;gap:0.8rem;border-bottom:1px solid #cfdeef;padding-bottom:0.6rem;margin-bottom:0.8rem;}'+
+                '.preview-q-num{background:#eef2ff;width:30px;height:30px;border-radius:30px;display:inline-flex;align-items:center;justify-content:center;}'+
+                '@media print{body{margin:0;padding:0.5cm;}}</style></head><body><div class="exam-paper">'+htmlContent+'</div></body></html>');
+            win.document.close(); 
+            win.focus(); 
+            win.print();
+        }
+        
+        // تصدير الاختبار الحالي
+        async function exportCurrentAsImage() {
+            const examData = { name: examNameInput.value, subject: subjectInput.value, semester: semesterInput.value, school: schoolNameInput.value, studentName: studentNameInput.value, totalScore: totalScoreInput.value, questions: questionsList };
+            const tempDiv = document.createElement('div'); 
+            tempDiv.style.position = 'absolute'; 
+            tempDiv.style.left = '-9999px'; 
+            tempDiv.style.background = 'white'; 
+            tempDiv.style.padding = '20px'; 
+            tempDiv.style.width = '800px';
+            tempDiv.innerHTML = generateExamHTML(examData);
+            document.body.appendChild(tempDiv);
+            const canvas = await html2canvas(tempDiv, { scale: 2.5 });
+            const link = document.createElement('a'); 
+            link.download = `اختبار_${Date.now()}.png`; 
+            link.href = canvas.toDataURL(); 
+            link.click();
+            document.body.removeChild(tempDiv);
+        }
+        
+        async function exportCurrentAsPDF() {
+            const examData = { name: examNameInput.value, subject: subjectInput.value, semester: semesterInput.value, school: schoolNameInput.value, studentName: studentNameInput.value, totalScore: totalScoreInput.value, questions: questionsList };
+            const tempDiv = document.createElement('div'); 
+            tempDiv.style.position = 'absolute'; 
+            tempDiv.style.left = '-9999px'; 
+            tempDiv.style.background = 'white'; 
+            tempDiv.style.padding = '20px'; 
+            tempDiv.style.width = '800px';
+            tempDiv.innerHTML = generateExamHTML(examData);
+            document.body.appendChild(tempDiv);
+            const canvas = await html2canvas(tempDiv, { scale: 2.5 });
             const imgData = canvas.toDataURL('image/png');
-            const { jsPDF } = window.jspdf;
-            const imgWidth = 210; const pageHeight = 297; const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const { jsPDF } = window.jspdf; 
+            const imgWidth = 210; 
+            const imgHeight = (canvas.height * imgWidth) / canvas.width; 
             let pdf = new jsPDF('p', 'mm', 'a4');
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-            let heightLeft = imgHeight - pageHeight; let position = -pageHeight;
-            while (heightLeft > 0) { position = heightLeft - imgHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pageHeight; }
-            pdf.save(`${exam.name}_${Date.now()}.pdf`);
-        } catch(err) { alert("خطأ في تصدير PDF"); } finally { document.body.removeChild(tempDiv); }
-    }
-
-    function printExamFromData(exam) {
-        const htmlContent = generateExamHTML(exam, exam.studentName);
-        const win = window.open('', '_blank');
-        win.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>طباعة الاختبار</title><style>'+
-            '*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI","Cairo";direction:rtl;} body{padding:0.7cm;background:white;}'+
-            '.exam-paper{max-width:100%;margin:auto;}.exam-info-block{background:#ecf2f9;border-radius:1rem;padding:0.8rem 1rem;display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:1.5rem;}'+
-            '.total-score-fraction{background:#fff;border-radius:0.8rem;padding:0.2rem 0.8rem;}.fraction{display:inline-flex;flex-direction:column;align-items:center;}'+
-            '.numerator{border-bottom:2px solid #2c6e2c;font-size:1.3rem;font-weight:bold;min-width:50px;}.student-info-row{background:#f5f9fe;border-radius:1rem;padding:0.5rem 1rem;margin-bottom:1rem;}'+
-            '.answer-title{font-size:1.1rem;font-weight:bold;margin:1rem 0 1rem 0;border-right:4px solid #2c6e9e;padding-right:0.5rem;}'+
-            '.preview-question{display:flex;gap:0.8rem;border-bottom:1px solid #cfdeef;padding-bottom:0.6rem;margin-bottom:0.8rem;}'+
-            '.preview-q-num{background:#eef2ff;width:30px;height:30px;border-radius:30px;display:inline-flex;align-items:center;justify-content:center;}'+
-            '@media print{body{margin:0;padding:0.5cm;}}</style></head><body><div class="exam-paper">'+htmlContent+'</div></body></html>');
-        win.document.close(); win.focus(); win.print();
-    }
-
-    // تصدير الصورة و PDF وطباعة للاختبار الحالي
-    async function exportCurrentAsImage() {
-        const examData = { name: examNameInput.value, subject: subjectInput.value, semester: semesterInput.value, school: schoolNameInput.value, studentName: studentNameInput.value, totalScore: totalScoreInput.value, questions: questionsList };
-        const tempDiv = document.createElement('div'); tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px'; tempDiv.style.background = 'white'; tempDiv.style.padding = '20px'; tempDiv.style.width = '800px';
-        tempDiv.innerHTML = generateExamHTML(examData);
-        document.body.appendChild(tempDiv);
-        const canvas = await html2canvas(tempDiv, { scale: 2.5 });
-        const link = document.createElement('a'); link.download = `اختبار_${Date.now()}.png`; link.href = canvas.toDataURL(); link.click();
-        document.body.removeChild(tempDiv);
-    }
-    async function exportCurrentAsPDF() {
-        const examData = { name: examNameInput.value, subject: subjectInput.value, semester: semesterInput.value, school: schoolNameInput.value, studentName: studentNameInput.value, totalScore: totalScoreInput.value, questions: questionsList };
-        const tempDiv = document.createElement('div'); tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px'; tempDiv.style.background = 'white'; tempDiv.style.padding = '20px'; tempDiv.style.width = '800px';
-        tempDiv.innerHTML = generateExamHTML(examData);
-        document.body.appendChild(tempDiv);
-        const canvas = await html2canvas(tempDiv, { scale: 2.5 });
-        const imgData = canvas.toDataURL('image/png');
-        const { jsPDF } = window.jspdf; const imgWidth = 210; const imgHeight = (canvas.height * imgWidth) / canvas.width; let pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-        pdf.save(`الاختبار_${Date.now()}.pdf`);
-        document.body.removeChild(tempDiv);
-    }
-    function printCurrent() {
-        const examData = { name: examNameInput.value, subject: subjectInput.value, semester: semesterInput.value, school: schoolNameInput.value, studentName: studentNameInput.value, totalScore: totalScoreInput.value, questions: questionsList };
-        const html = generateExamHTML(examData);
-        const win = window.open('', '_blank');
-        win.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>طباعة</title><style>'+
-            'body{padding:0.7cm;background:white;}.exam-info-block{background:#ecf2f9;display:flex;justify-content:space-between;margin-bottom:1.5rem;}'+
-            '.student-info-row{background:#f5f9fe;margin-bottom:1rem;}.answer-title{font-weight:bold;margin:1rem 0;}.preview-question{display:flex;gap:0.8rem;border-bottom:1px solid #ccc;padding-bottom:0.6rem;}'+
-            '@media print{body{margin:0;}}</style></head><body><div class="exam-paper">'+html+'</div></body></html>');
-        win.document.close(); win.focus(); win.print();
-    }
-
-    // ربط المدخلات بالحفظ التلقائي والمعاينة
-    function bindInputs() {
-        const inputs = [examNameInput, subjectInput, semesterInput, schoolNameInput, studentNameInput, totalScoreInput];
-        inputs.forEach(inp => { inp.addEventListener('input', () => { renderPreview(); triggerAutoSave(); }); });
-    }
-
-    // التهيئة وتبويبات
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const tabId = btn.getAttribute('data-tab');
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active-tab'));
-            if(tabId === 'create') document.getElementById('createTab').classList.add('active-tab');
-            else document.getElementById('savedTab').classList.add('active-tab');
-            if(tabId === 'saved') renderSavedExamsList();
+            pdf.save(`الاختبار_${Date.now()}.pdf`);
+            document.body.removeChild(tempDiv);
+        }
+        
+        function printCurrent() {
+            const examData = { name: examNameInput.value, subject: subjectInput.value, semester: semesterInput.value, school: schoolNameInput.value, studentName: studentNameInput.value, totalScore: totalScoreInput.value, questions: questionsList };
+            const html = generateExamHTML(examData);
+            const win = window.open('', '_blank');
+            win.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>طباعة</title><style>'+
+                'body{padding:0.7cm;background:white;}.exam-info-block{background:#ecf2f9;display:flex;justify-content:space-between;margin-bottom:1.5rem;}'+
+                '.student-info-row{background:#f5f9fe;margin-bottom:1rem;}.answer-title{font-weight:bold;margin:1rem 0;}.preview-question{display:flex;gap:0.8rem;border-bottom:1px solid #ccc;padding-bottom:0.6rem;}'+
+                '@media print{body{margin:0;}}</style></head><body><div class="exam-paper">'+html+'</div></body></html>');
+            win.document.close(); 
+            win.focus(); 
+            win.print();
+        }
+        
+        // ربط المدخلات بالمعاينة والحفظ التلقائي
+        function bindInputs() {
+            const inputs = [examNameInput, subjectInput, semesterInput, schoolNameInput, studentNameInput, totalScoreInput];
+            inputs.forEach(inp => { 
+                inp.addEventListener('input', () => { 
+                    renderPreview(); 
+                    saveAutoSaveState(); 
+                }); 
+            });
+        }
+        
+        // التبديل بين التبويبات
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tabId = btn.getAttribute('data-tab');
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active-tab'));
+                if(tabId === 'create') document.getElementById('createTab').classList.add('active-tab');
+                else document.getElementById('savedTab').classList.add('active-tab');
+                if(tabId === 'saved') renderSavedExamsList();
+            });
         });
-    });
-
-    function init() {
-        loadAutoSaveState();
-        bindInputs();
-        renderQuestionsEditor();
-        renderPreview();
-        loadSavedExamsFromStorage();
-        addBtn.addEventListener('click', addNewQuestion);
-        saveExamBtn.addEventListener('click', saveCurrentExamToLibrary);
-        exportImageBtn.addEventListener('click', exportCurrentAsImage);
-        exportPdfBtn.addEventListener('click', exportCurrentAsPDF);
-        printBtn.addEventListener('click', printCurrent);
-        window.addEventListener('beforeunload', () => { saveCurrentStateToLocal(); });
-    }
-    init();
+        
+        // ---------- التهيئة النهائية ----------
+        function init() {
+            loadAutoSaveState();
+            bindInputs();
+            renderQuestionsEditor();
+            renderPreview();
+            loadSavedExamsFromStorage();
+            
+            // ربط الأزرار (تم تعريفها بشكل صحيح)
+            if(addQuestionBtn) addQuestionBtn.addEventListener('click', addNewQuestion);
+            if(saveExamBtn) saveExamBtn.addEventListener('click', saveCurrentExamToLibrary);
+            if(exportImageBtn) exportImageBtn.addEventListener('click', exportCurrentAsImage);
+            if(exportPdfBtn) exportPdfBtn.addEventListener('click', exportCurrentAsPDF);
+            if(printBtn) printBtn.addEventListener('click', printCurrent);
+            
+            // حفظ تلقائي عند إغلاق الصفحة
+            window.addEventListener('beforeunload', () => { saveAutoSaveState(); });
+        }
+        
+        init();
+    })();
 </script>
 </body>
 </html>
