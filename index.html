@@ -75,17 +75,6 @@
             box-shadow: 0 0 0 3px rgba(43,106,159,0.15);
         }
 
-        /* حقل الاسم المثلث (طويل) */
-        .fullname-input {
-            flex: 2 1 280px;
-            min-width: 240px;
-        }
-        .fullname-input input {
-            letter-spacing: 0.3px;
-            font-size: 1rem;
-            background-color: #fefef7;
-        }
-
         .questions-editor-area {
             margin-top: 1rem;
         }
@@ -218,12 +207,12 @@
             transition: all 0.2s;
         }
 
-        /* كتلة المعلومات الرمادية الفاتحة + مجموع الدرجات في أقصى اليسار */
+        /* كتلة المعلومات الرمادية الفاتحة + مربع الدرجات (كسر) */
         .exam-info-block {
             background: #ecf2f9;   /* رمادي فاتح */
             border-radius: 1.5rem;
             padding: 1rem 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border: 1px solid #dae3f0;
             display: flex;
             flex-wrap: wrap;
@@ -257,12 +246,64 @@
             color: #0f3b5c;
         }
 
-        .student-name-field {
-            background: #ffffffcc;
-            padding: 0.45rem 1.2rem;
-            border-radius: 2rem;
-            font-weight: 500;
+        /* مربع مجموع الدرجات بشكل كسر (بسط فوق الخط ومقام تحت الخط) */
+        .total-score-fraction {
+            background: #ffffffdd;
+            border-radius: 1rem;
+            padding: 0.4rem 1rem;
+            text-align: center;
+            min-width: 100px;
+            border: 1px solid #bdd2ea;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .fraction {
             display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fraction .numerator {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #1a4c2d;
+            border-bottom: 2px solid #2c6e2c;
+            padding: 0 8px 2px 8px;
+            margin-bottom: 2px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .fraction .denominator {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #3d6b4b;
+            padding-top: 2px;
+        }
+
+        .score-label-small {
+            font-size: 0.7rem;
+            color: #5a6e47;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        /* صف اسم الطالب (فارغ بدون خطوط أو تعبئة) */
+        .student-info-row {
+            background: #f5f9fe;
+            border-radius: 1rem;
+            padding: 0.6rem 1.2rem;
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            border: 1px solid #e3edf7;
+        }
+
+        .student-name-field {
+            background: transparent;
+            padding: 0;
+            display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
@@ -271,47 +312,19 @@
         .student-name-field span {
             font-weight: 800;
             color: #0f3b5c;
-        }
-
-        .student-name-value {
-            min-width: 200px;
-            border-bottom: 1.5px dashed #647c9e;
-            display: inline-block;
-            padding: 0 0.3rem;
-            color: #1f476b;
-            font-weight: 500;
             font-size: 0.95rem;
         }
 
-        /* مربع مجموع الدرجات - أقصى اليسار */
-        .total-score-box {
-            background: #ffffffdd;
-            border-radius: 1.2rem;
-            padding: 0.45rem 1.2rem;
-            text-align: center;
-            min-width: 130px;
-            border: 1px solid #bdd2ea;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .total-score-box .score-label {
-            font-weight: 800;
-            color: #1f5e3a;
-            font-size: 0.85rem;
-            display: block;
-        }
-
-        .total-score-box .score-value {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #1a4c2d;
-            letter-spacing: 1px;
-        }
-
-        .score-placeholder {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #2c5e2e;
+        .student-name-value {
+            min-width: 240px;
+            color: #1f476b;
+            font-weight: 500;
+            font-size: 0.95rem;
+            background: transparent;
+            /* خالية تماماً بدون خط أو تعبئة */
+            border: none;
+            padding: 0.2rem 0;
+            display: inline-block;
         }
 
         .questions-list-preview {
@@ -410,9 +423,9 @@
                 <label>🏫 المدرسة</label>
                 <input type="text" id="schoolName" value="متوسطة الحسين بن علي">
             </div>
-            <div class="input-group fullname-input">
-                <label>👤 اسم الطالب (الثلاثي)</label>
-                <input type="text" id="studentName" placeholder="مثال: أحمد محمد حسن العلي" value="_________________________">
+            <div class="input-group">
+                <label>👤 اسم الطالب</label>
+                <input type="text" id="studentName" placeholder="اسم الطالب" value="">
             </div>
         </div>
 
@@ -432,14 +445,14 @@
         </div>
     </div>
 
-    <!-- معاينة ورقة الاختبار النهائية (معلومات + مجموع الدرجات + الأسئلة) -->
+    <!-- معاينة ورقة الاختبار النهائية (بمربع الدرجات على شكل كسر + اسم الطالب فارغ) -->
     <div class="preview-title no-print">
         <span>📄 ورقة الأسئلة - متوسطة الحسين بن علي (جاهزة للطباعة)</span>
     </div>
     <div id="examPaperPreview" class="exam-paper">
         <div style="text-align:center; padding:2rem;">جاري تحميل المعاينة...</div>
     </div>
-    <footer class="no-print">✧ الحد الأقصى 15 سؤالاً في الصفحة الواحدة | خانة الاسم الثلاثي ممتدة | مجموع الدرجات ضمن المعلومات ✧</footer>
+    <footer class="no-print">✧ الحد الأقصى 15 سؤالاً في الصفحة الواحدة | مربع الدرجات (درجة الطالب / المجموع) يملؤه المعلم ✧</footer>
 </div>
 
 <script>
@@ -493,7 +506,7 @@
         }
     }
 
-    // عرض المحرر (مع إصلاح مشكلة الكتابة بشكل كامل)
+    // عرض المحرر (مع إمكانية الكتابة في الحقول)
     function renderQuestionsEditor() {
         if (!container) return;
         container.innerHTML = '';
@@ -557,7 +570,7 @@
         renderPreview();
     }
 
-    // تحديث المعاينة النهائية: معلومات + اسم الطالب + مجموع الدرجات في أقصى اليسار + الأسئلة
+    // تحديث المعاينة النهائية: معلومات + مربع الدرجات (كسر) + اسم الطالب (فارغ) + الأسئلة
     function renderPreview() {
         // قراءة القيم
         const examName = examNameInput.value.trim() || "اختبار غير محدد";
@@ -565,25 +578,32 @@
         const semester = semesterInput.value.trim() || "—";
         const schoolName = schoolNameInput.value.trim() || "متوسطة الحسين بن علي";
         let studentNameRaw = studentNameInput.value.trim();
-        if (studentNameRaw === "") studentNameRaw = "...................";
+        // نترك الخانة فارغة تماماً إذا لم يكتب الطالب شيئاً (لا نضيف خطوط أو نقط)
+        // لكن لعرض نص فارغ نعرض فراغ فقط.
         
-        // قيمة مجموع الدرجات (يمكن تعديلها يدوياً أو تعبئة افتراضية)
-        // نجعلها editable عبر إضافة حقل خفي أو نعطي حقل في لوحة التحرير? حسب متطلبات المستخدم وضوحاً, نضيف قيمة افتراضية 30 درجة.
-        // ويمكن للمستخدم تغييرها عبر نافذة صغيرة، لكن نقدم إدخال رقمي بوضع حقل في معلومات المعاينة؟ لسهولة الاستخدام سأضيف حقل نصي صغير ضمن معلومات الاختبار نفسه ليتمكن المستخدم من تحديد الدرجة.
-        // لكن الطلب: مربع مجموع الدرجات يكون ضمن معلومات الاختبار في أقصى اليسار، ويظهر في المعاينة. ولتعديل الدرجة بسهولة سأضع حقل مخفي في التحرير مع إمكانية كتابته.
-        // لتجربة أفضل: نضيف مدخل رقمي باسم totalScore في لوحة التحرير بشكل أنيق.
-        // نتحقق إذا كان الحقل موجوداً، وإلا ننشئه ديناميكياً. لكن الصفحة الحالية ليس بها مدخل للدرجات، لذا نضيفه داخل الـ editor-panel دون تعقيد.
-        // سأقوم بإضافة input بجوار معلومات المدرسة ضمن form-grid.
+        // الحصول على المجموع الكلي من حقل منفصل في لوحة التحرير (لنضيفه أثناء التهيئة)
         let totalScoreElement = document.getElementById('totalScoreInput');
-        let totalScore = "30"; // قيمة افتراضية
+        let totalScoreValue = "30"; // قيمة افتراضية
         if (totalScoreElement) {
-            totalScore = totalScoreElement.value.trim() || "30";
-        } else {
-            // ننشئه بشكل آمن في حال لم يوجد (حتى لا يختفي، لكننا سنقوم بإنشائه فوراً عند التهيئة)
-            totalScore = "30";
+            totalScoreValue = totalScoreElement.value.trim() || "30";
         }
         
-        // بناء كتلة المعلومات العلوية (رمادي فاتح) ومربع الدرجات في أقصى اليسار (باستخدام flex)
+        // مربع مجموع الدرجات بشكل كسر (بسط يحتمل أن يكتبه المعلم، والمقام هو المجموع الكلي)
+        // نضع علامة "..." أو خط في البسط ليملأه المعلم، والمجموع الكلي يظهر ثابتاً.
+        // وفق الطلب: "اضف فقط المجموع واعلى الخط يمليه المعلم بعد التصحيح" 
+        // يعني البسط فارغ (أو شرطة) ليكتب المعلم الدرجة، والمقام يظهر المجموع الكلي.
+        const fractionBox = `
+            <div class="total-score-fraction">
+                <div class="score-label-small">درجة الطالب</div>
+                <div class="fraction">
+                    <div class="numerator" style="border-bottom: 2px solid #2c6e2c; min-width: 55px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                    <div class="denominator">${escapeHtml(totalScoreValue)}</div>
+                </div>
+                <div style="font-size:0.65rem; color:#456b3a;">يكتبها المعلم</div>
+            </div>
+        `;
+        
+        // بناء كتلة المعلومات العلوية (رمادي فاتح) مع الدرجات في أقصى اليسار
         const infoHTML = `
             <div class="exam-info-block">
                 <div class="info-left-group">
@@ -592,16 +612,18 @@
                     <div class="info-chip"><strong>🗓️ الفصل:</strong> ${escapeHtml(semester)}</div>
                     <div class="info-chip"><strong>🏫 المدرسة:</strong> ${escapeHtml(schoolName)}</div>
                 </div>
-                <div class="total-score-box">
-                    <span class="score-label">📊 مجموع الدرجات</span>
-                    <div class="score-value">${escapeHtml(totalScore)}</div>
-                    <span class="score-placeholder">من ${escapeHtml(totalScore)}</span>
-                </div>
+                ${fractionBox}
             </div>
-            <div class="student-info-row" style="background: #f5f9fe; border-radius: 1rem; padding: 0.5rem 1.2rem; margin-bottom: 1.8rem; display: flex; align-items: center;">
-                <div class="student-name-field" style="background: transparent; padding: 0;">
-                    <span>👨‍🎓 اسم الطالب : </span>
-                    <span class="student-name-value" style="min-width: 250px; border-bottom: 1.5px solid #5f7da0;">${escapeHtml(studentNameRaw)}</span>
+        `;
+        
+        // صف اسم الطالب (خانة فارغة بدون خطوط أو تعبئة مسبقة)
+        // نعرض اسم الطالب إذا كتبه المستخدم، وإلا فراغ.
+        const studentDisplay = studentNameRaw === "" ? "" : escapeHtml(studentNameRaw);
+        const studentRow = `
+            <div class="student-info-row">
+                <div class="student-name-field">
+                    <span>👨‍🎓 اسم الطالب :</span>
+                    <span class="student-name-value">${studentDisplay}</span>
                 </div>
             </div>
         `;
@@ -623,10 +645,10 @@
         }
         questionsHTML += `</div>`;
         
-        // إضافة مساحة للإجابة (مخصصة للطالب)
-        const answerLine = `<div style="margin-top: 2rem; border-top: 1px solid #e2edf7; padding-top: 1rem; font-size:0.8rem; color:#6a85a3;">📝 مساحة الإجابة: يمكن للطالب الإجابة في الورقة نفسها أو على ورقة مستقلة.</div>`;
+        // إضافة مساحة للإجابة المقالية (مخصصة للطالب)
+        const answerSpace = `<div style="margin-top: 2rem; border-top: 1px solid #e2edf7; padding-top: 1rem; font-size:0.8rem; color:#6a85a3;">📝 مساحة الإجابة: يمكن للطالب الإجابة في الورقة نفسها أو على ورقة مستقلة.</div>`;
         
-        const finalRender = infoHTML + questionsHTML + answerLine;
+        const finalRender = infoHTML + studentRow + questionsHTML + answerSpace;
         examPreviewDiv.innerHTML = finalRender;
     }
 
@@ -638,14 +660,13 @@
         schoolNameInput.addEventListener('input', () => renderPreview());
         studentNameInput.addEventListener('input', () => renderPreview());
         
-        // إضافة مستمع لحقل مجموع الدرجات (إن وجد)
         const totalScoreField = document.getElementById('totalScoreInput');
         if (totalScoreField) {
             totalScoreField.addEventListener('input', () => renderPreview());
         }
     }
     
-    // إضافة حقل مجموع الدرجات ضمن واجهة التحرير (في form-grid) ليتمكن المستخدم من تحديد الدرجة بسهولة
+    // إضافة حقل مجموع الدرجات ضمن واجهة التحرير (ليتمكن المعلم من تحديد المجموع الكلي)
     function injectTotalScoreField() {
         const formGrid = document.querySelector('.form-grid');
         if (formGrid && !document.getElementById('totalScoreInput')) {
@@ -653,11 +674,11 @@
             scoreDiv.className = 'input-group';
             scoreDiv.style.minWidth = '140px';
             scoreDiv.innerHTML = `
-                <label>⭐ مجموع الدرجات</label>
-                <input type="text" id="totalScoreInput" placeholder="مثال: 30" value="(    )">
+                <label>⭐ المجموع الكلي للدرجات</label>
+                <input type="text" id="totalScoreInput" placeholder="مثال: 30" value="30">
+                <small style="display:block; font-size:0.7rem;">(يكتب المعلم الدرجة في البسط بعد التصحيح)</small>
             `;
             formGrid.appendChild(scoreDiv);
-            // ربط الحدث بعد الإضافة
             const newScoreInput = document.getElementById('totalScoreInput');
             if (newScoreInput) {
                 newScoreInput.addEventListener('input', () => renderPreview());
@@ -734,10 +755,12 @@
             .exam-info-block { background:#ecf2f9; border-radius:1rem; padding:0.8rem 1rem; display:flex; justify-content:space-between; flex-wrap:wrap; align-items:center; margin-bottom:1.5rem; }
             .info-left-group { display:flex; flex-wrap:wrap; gap:0.6rem; }
             .info-chip { background:#ffffffcc; padding:0.3rem 1rem; border-radius:2rem; font-size:0.8rem; }
-            .total-score-box { background:#fff; border-radius:1rem; padding:0.3rem 1.2rem; text-align:center; }
-            .score-value { font-size:1.3rem; font-weight:bold; }
+            .total-score-fraction { background:#fff; border-radius:0.8rem; padding:0.2rem 0.8rem; text-align:center; }
+            .fraction { display:inline-flex; flex-direction:column; align-items:center; }
+            .numerator { border-bottom:2px solid #2c6e2c; font-size:1.3rem; font-weight:bold; min-width:50px; padding:0 6px; }
+            .denominator { font-size:0.9rem; font-weight:bold; }
+            .student-info-row { background:#f5f9fe; border-radius:1rem; padding:0.5rem 1rem; margin-bottom:1.5rem; }
             .student-name-field span { font-weight:bold; }
-            .student-name-value { border-bottom:1px solid #555; min-width:200px; display:inline-block; }
             .preview-question { display:flex; gap:0.8rem; border-bottom:1px solid #cfdeef; padding-bottom:0.6rem; margin-bottom:0.8rem; }
             .preview-q-num { background:#eef2ff; width:30px; height:30px; border-radius:30px; display:inline-flex; align-items:center; justify-content:center; }
             @media print { body { margin:0; padding:0.5cm; } }
@@ -752,7 +775,7 @@
     
     // ========= التهيئة النهائية =========
     function init() {
-        injectTotalScoreField();      // إضافة حقل مجموع الدرجات في لوحة التحرير
+        injectTotalScoreField();      // إضافة حقل المجموع الكلي في لوحة التحرير
         bindPreviewEvents();
         renderQuestionsEditor();
         updateMaxLimit();
