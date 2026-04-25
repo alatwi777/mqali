@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>نظام الاختبارات المقالي | الأسئلة والطباعة</title>
+    <title>متوسطة الحسين بن علي | نظام الاختبارات المقالية</title>
+    <!-- المكتبات اللازمة للتصدير والطباعة -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -11,13 +12,13 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Tajawal', 'Cairo', 'Roboto', sans-serif;
+            font-family: 'Segoe UI', 'Tajawal', 'Cairo', 'Amiri', 'Roboto', sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #e9eff7 0%, #d9e2ef 100%);
+            background: linear-gradient(145deg, #eef3fc 0%, #dee7f2 100%);
             min-height: 100vh;
-            padding: 40px 24px;
+            padding: 36px 24px;
         }
 
         .app-container {
@@ -27,22 +28,22 @@
 
         /* لوحة التحرير */
         .editor-panel {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(2px);
-            border-radius: 28px;
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
             padding: 2rem;
             margin-bottom: 2rem;
-            border: 1px solid rgba(255,255,240,0.8);
+            border: 1px solid rgba(255,255,245,0.9);
         }
 
         .form-grid {
             display: flex;
             flex-wrap: wrap;
             gap: 1.2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.8rem;
             padding-bottom: 1rem;
-            border-bottom: 2px dashed #bfd3ec;
+            border-bottom: 2px dashed #c7daf0;
         }
 
         .input-group {
@@ -58,7 +59,7 @@
             font-size: 0.85rem;
         }
 
-        .input-group input {
+        .input-group input, .input-group textarea {
             width: 100%;
             padding: 0.7rem 1rem;
             border-radius: 1.5rem;
@@ -69,9 +70,20 @@
             outline: none;
         }
 
-        .input-group input:focus {
+        .input-group input:focus, .input-group textarea:focus {
             border-color: #2b6a9f;
             box-shadow: 0 0 0 3px rgba(43,106,159,0.15);
+        }
+
+        /* حقل الاسم المثلث (طويل) */
+        .fullname-input {
+            flex: 2 1 280px;
+            min-width: 240px;
+        }
+        .fullname-input input {
+            letter-spacing: 0.3px;
+            font-size: 1rem;
+            background-color: #fefef7;
         }
 
         .questions-editor-area {
@@ -79,7 +91,7 @@
         }
 
         .question-item {
-            background: #f8fbfe;
+            background: #fbfdff;
             margin-bottom: 1rem;
             padding: 1rem 1.2rem;
             border-radius: 1.5rem;
@@ -87,7 +99,7 @@
             align-items: flex-start;
             gap: 1rem;
             flex-wrap: wrap;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
             border-right: 5px solid #2c6e9e;
         }
 
@@ -113,7 +125,7 @@
             width: 100%;
             padding: 0.7rem 1rem;
             border-radius: 1.2rem;
-            border: 1px solid #c9dcf0;
+            border: 1px solid #cde0f0;
             resize: vertical;
             font-size: 0.95rem;
             background: white;
@@ -121,7 +133,7 @@
         }
 
         .remove-question {
-            background: #ffe6e6;
+            background: #ffeae9;
             border: none;
             color: #b81c2c;
             font-weight: bold;
@@ -132,7 +144,7 @@
         }
 
         .remove-question:hover {
-            background: #ffcece;
+            background: #ffd6d4;
             transform: scale(0.96);
         }
 
@@ -151,7 +163,7 @@
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.12);
             background: linear-gradient(95deg, #143b5c, #1f547c);
         }
 
@@ -186,7 +198,7 @@
             margin-top: 8px;
         }
 
-        /* ورقة الاختبار النهائية (معاينة + الطباعة) */
+        /* ورقة الاختبار النهائية (معاينة) */
         .preview-title {
             font-size: 1.4rem;
             font-weight: 700;
@@ -206,23 +218,27 @@
             transition: all 0.2s;
         }
 
-        /* صف معلومات الاختبار + اسم الطالب - تصميم رمادي فاتح */
+        /* كتلة المعلومات الرمادية الفاتحة + مجموع الدرجات في أقصى اليسار */
         .exam-info-block {
-            background: #edf2f9;
+            background: #ecf2f9;   /* رمادي فاتح */
             border-radius: 1.5rem;
             padding: 1rem 1.5rem;
             margin-bottom: 2rem;
-            border: 1px solid #d9e4f0;
-            box-shadow: inset 0 1px 2px #fff, 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .info-row-top {
+            border: 1px solid #dae3f0;
             display: flex;
             flex-wrap: wrap;
+            align-items: center;
             justify-content: space-between;
+            gap: 1rem;
+            box-shadow: inset 0 1px 2px #ffffff80, 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .info-left-group {
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 0.75rem;
+            flex: 3;
         }
 
         .info-chip {
@@ -258,11 +274,44 @@
         }
 
         .student-name-value {
-            min-width: 140px;
-            border-bottom: 1px dashed #7689a8;
+            min-width: 200px;
+            border-bottom: 1.5px dashed #647c9e;
             display: inline-block;
-            padding: 0 0.2rem;
+            padding: 0 0.3rem;
             color: #1f476b;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* مربع مجموع الدرجات - أقصى اليسار */
+        .total-score-box {
+            background: #ffffffdd;
+            border-radius: 1.2rem;
+            padding: 0.45rem 1.2rem;
+            text-align: center;
+            min-width: 130px;
+            border: 1px solid #bdd2ea;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .total-score-box .score-label {
+            font-weight: 800;
+            color: #1f5e3a;
+            font-size: 0.85rem;
+            display: block;
+        }
+
+        .total-score-box .score-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #1a4c2d;
+            letter-spacing: 1px;
+        }
+
+        .score-placeholder {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c5e2e;
         }
 
         .questions-list-preview {
@@ -317,7 +366,7 @@
                 border-radius: 0;
             }
             .exam-info-block {
-                background: #e6edf6 !important;
+                background: #e9eff7 !important;
                 print-color-adjust: exact;
                 -webkit-print-color-adjust: exact;
             }
@@ -341,35 +390,35 @@
 </head>
 <body>
 <div class="app-container">
-    <!-- قسم تحرير الاختبار -->
+    <!-- لوحة تحرير الاختبار -->
     <div class="editor-panel no-print">
-        <h2 style="color:#1e3a5f; margin-bottom: 1rem;">📋 إنشاء اختبار مقالات احترافي</h2>
+        <h2 style="color:#1e3a5f; margin-bottom: 1rem;">📝 متوسطة الحسين بن علي | منشئ الاختبارات المقالية</h2>
         <div class="form-grid">
             <div class="input-group">
                 <label>📌 اسم الاختبار</label>
-                <input type="text" id="examName" placeholder="مثال: اختبار الفصل الدراسي" value="الاختبار التحريري">
+                <input type="text" id="examName" placeholder="مثال: اختبار الفصل الدراسي" value="الاختبار التحريري النهائي">
             </div>
             <div class="input-group">
                 <label>📚 المادة</label>
-                <input type="text" id="subject" placeholder="الرياضيات / العلوم" value="اللغة العربية وآدابها">
+                <input type="text" id="subject" placeholder="مادة: ..." value="التربية الإسلامية + اللغة العربية">
             </div>
             <div class="input-group">
                 <label>📅 الفصل الدراسي</label>
-                <input type="text" id="semester" value="الفصل الدراسي الأول">
+                <input type="text" id="semester" value="الفصل الدراسي الثاني">
             </div>
             <div class="input-group">
-                <label>🏫 اسم المدرسة</label>
-                <input type="text" id="schoolName" value="مدارس الفرسان العالمية">
+                <label>🏫 المدرسة</label>
+                <input type="text" id="schoolName" value="متوسطة الحسين بن علي">
             </div>
-            <div class="input-group">
-                <label>👤 اسم الطالب</label>
-                <input type="text" id="studentName" placeholder="اسم الطالب / الطالبة" value="_________________">
+            <div class="input-group fullname-input">
+                <label>👤 اسم الطالب (الثلاثي)</label>
+                <input type="text" id="studentName" placeholder="مثال: أحمد محمد حسن العلي" value="_________________________">
             </div>
         </div>
 
         <div class="questions-editor-area">
             <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 12px;">
-                <h3 style="color:#1f4970;">✍️ الأسئلة المقالية</h3>
+                <h3 style="color:#1f4970;">✍️ الأسئلة المقالية (اكتب نص السؤال)</h3>
                 <span id="questionCounterDisplay" style="background:#eef2fa; padding: 5px 16px; border-radius: 50px;">0 / 15</span>
             </div>
             <div id="dynamicQuestionsContainer"></div>
@@ -383,24 +432,24 @@
         </div>
     </div>
 
-    <!-- معاينة الورقة (تظهر المعلومات + اسم الطالب + الأسئلة) -->
+    <!-- معاينة ورقة الاختبار النهائية (معلومات + مجموع الدرجات + الأسئلة) -->
     <div class="preview-title no-print">
-        <span>📄 ورقة الأسئلة النهائية (جاهزة للطباعة/التصدير)</span>
+        <span>📄 ورقة الأسئلة - متوسطة الحسين بن علي (جاهزة للطباعة)</span>
     </div>
     <div id="examPaperPreview" class="exam-paper">
         <div style="text-align:center; padding:2rem;">جاري تحميل المعاينة...</div>
     </div>
-    <footer class="no-print">✧ حد أقصى 15 سؤالاً في الصفحة الواحدة | تصميم معلومات رمادي فاتح مع اسم الطالب ✧</footer>
+    <footer class="no-print">✧ الحد الأقصى 15 سؤالاً في الصفحة الواحدة | خانة الاسم الثلاثي ممتدة | مجموع الدرجات ضمن المعلومات ✧</footer>
 </div>
 
 <script>
-    // قائمة الأسئلة (نصوص)
+    // قائمة الأسئلة الافتراضية
     let questionsList = [
-        "اشرح أسباب ازدهار الحضارة الإسلامية في العصر العباسي، مع ذكر مثالين.",
-        "ما أثر التقنيات الحديثة على تطوير التعليم؟ ناقش بإيجاز."
+        "اذكر آداب تلاوة القرآن الكريم مع شرح اثنين منها بإيجاز.",
+        "ما أهمية بر الوالدين في الإسلام؟ اكتب ثلاث فقرات قصيرة."
     ];
 
-    // عناصر DOM للتحرير والمعاينة
+    // عناصر DOM
     const container = document.getElementById('dynamicQuestionsContainer');
     const examPreviewDiv = document.getElementById('examPaperPreview');
     const addBtn = document.getElementById('addQuestionBtn');
@@ -410,14 +459,24 @@
     const maxWarningSpan = document.getElementById('maxWarning');
     const questionCounterSpan = document.getElementById('questionCounterDisplay');
 
-    // حقول الإدخال
+    // الحقول
     const examNameInput = document.getElementById('examName');
     const subjectInput = document.getElementById('subject');
     const semesterInput = document.getElementById('semester');
     const schoolNameInput = document.getElementById('schoolName');
     const studentNameInput = document.getElementById('studentName');
+    
+    // ========= دوال مساعدة ==========
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) { return c; });
+    }
 
-    // دوال التحديث الأساسية
     function updateMaxLimit() {
         const len = questionsList.length;
         questionCounterSpan.innerText = `${len} / 15`;
@@ -434,7 +493,7 @@
         }
     }
 
-    // عرض المحرر مع textareas قابلة للكتابة (تم إصلاح المشكلة)
+    // عرض المحرر (مع إصلاح مشكلة الكتابة بشكل كامل)
     function renderQuestionsEditor() {
         if (!container) return;
         container.innerHTML = '';
@@ -451,13 +510,13 @@
             textDiv.className = 'question-text';
             const textarea = document.createElement('textarea');
             textarea.rows = 2;
-            textarea.placeholder = `نص السؤال المقالي رقم ${i+1} ...`;
+            textarea.placeholder = `اكتب نص السؤال المقالي رقم ${i+1} ...`;
             textarea.value = questionsList[i];
-            // ربط التغيير مع تحديث مصفوفة الأسئلة والمعاينة
+            // ربط التغيير مباشرة
             textarea.addEventListener('input', (function(index) {
                 return function(e) {
                     questionsList[index] = e.target.value;
-                    renderPreview();          // تحديث المعاينة فوراً
+                    renderPreview();   // تحديث فوري للمعاينة
                 };
             })(i));
             
@@ -469,11 +528,11 @@
             removeBtn.addEventListener('click', (function(idx) {
                 return function() {
                     if (questionsList.length === 1) {
-                        alert("لا يمكن حذف جميع الأسئلة، يجب أن يبقى سؤال واحد على الأقل.");
+                        alert("⚠️ يجب أن يبقى سؤال واحد على الأقل في الورقة.");
                         return;
                     }
                     questionsList.splice(idx, 1);
-                    renderQuestionsEditor();   // إعادة بناء المحرر
+                    renderQuestionsEditor();
                     updateMaxLimit();
                     renderPreview();
                 };
@@ -489,47 +548,60 @@
     // إضافة سؤال جديد
     function addNewQuestion() {
         if (questionsList.length >= 15) {
-            alert("لا يمكن إضافة أكثر من 15 سؤالاً في الصفحة الواحدة (لضمان التصميم الأنيق).");
+            alert("لا يمكن إضافة أكثر من 15 سؤالاً (للحفاظ على صفحة A4 واحدة).");
             return;
         }
-        questionsList.push("سؤال مقالي جديد: اذكر أسباب وأهمية الموضوع مع التفصيل...");
+        questionsList.push("سؤال مقالي جديد: اذكر الأسباب والنتائج مع التوضيح...");
         renderQuestionsEditor();
         updateMaxLimit();
         renderPreview();
     }
 
-    // دالة الهروب من الـ HTML
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // المعاينة النهائية: معلومات الاختبار (رمادي فاتح) + اسم الطالب وأسفلها الأسئلة
+    // تحديث المعاينة النهائية: معلومات + اسم الطالب + مجموع الدرجات في أقصى اليسار + الأسئلة
     function renderPreview() {
+        // قراءة القيم
         const examName = examNameInput.value.trim() || "اختبار غير محدد";
         const subject = subjectInput.value.trim() || "—";
         const semester = semesterInput.value.trim() || "—";
-        const schoolName = schoolNameInput.value.trim() || "المدرسة";
-        let studentName = studentNameInput.value.trim();
-        if (studentName === "") studentName = "__________";
+        const schoolName = schoolNameInput.value.trim() || "متوسطة الحسين بن علي";
+        let studentNameRaw = studentNameInput.value.trim();
+        if (studentNameRaw === "") studentNameRaw = "...................";
         
-        // بناء كتلة المعلومات العليا ( رمادي فاتح مختلف عن الأسئلة )
+        // قيمة مجموع الدرجات (يمكن تعديلها يدوياً أو تعبئة افتراضية)
+        // نجعلها editable عبر إضافة حقل خفي أو نعطي حقل في لوحة التحرير? حسب متطلبات المستخدم وضوحاً, نضيف قيمة افتراضية 30 درجة.
+        // ويمكن للمستخدم تغييرها عبر نافذة صغيرة، لكن نقدم إدخال رقمي بوضع حقل في معلومات المعاينة؟ لسهولة الاستخدام سأضيف حقل نصي صغير ضمن معلومات الاختبار نفسه ليتمكن المستخدم من تحديد الدرجة.
+        // لكن الطلب: مربع مجموع الدرجات يكون ضمن معلومات الاختبار في أقصى اليسار، ويظهر في المعاينة. ولتعديل الدرجة بسهولة سأضع حقل مخفي في التحرير مع إمكانية كتابته.
+        // لتجربة أفضل: نضيف مدخل رقمي باسم totalScore في لوحة التحرير بشكل أنيق.
+        // نتحقق إذا كان الحقل موجوداً، وإلا ننشئه ديناميكياً. لكن الصفحة الحالية ليس بها مدخل للدرجات، لذا نضيفه داخل الـ editor-panel دون تعقيد.
+        // سأقوم بإضافة input بجوار معلومات المدرسة ضمن form-grid.
+        let totalScoreElement = document.getElementById('totalScoreInput');
+        let totalScore = "30"; // قيمة افتراضية
+        if (totalScoreElement) {
+            totalScore = totalScoreElement.value.trim() || "30";
+        } else {
+            // ننشئه بشكل آمن في حال لم يوجد (حتى لا يختفي، لكننا سنقوم بإنشائه فوراً عند التهيئة)
+            totalScore = "30";
+        }
+        
+        // بناء كتلة المعلومات العلوية (رمادي فاتح) ومربع الدرجات في أقصى اليسار (باستخدام flex)
         const infoHTML = `
             <div class="exam-info-block">
-                <div class="info-row-top">
+                <div class="info-left-group">
                     <div class="info-chip"><strong>📋 الاختبار:</strong> ${escapeHtml(examName)}</div>
-                    <div class="info-chip"><strong>📖 المادة:</strong> ${escapeHtml(subject)}</div>
+                    <div class="info-chip"><strong>📚 المادة:</strong> ${escapeHtml(subject)}</div>
                     <div class="info-chip"><strong>🗓️ الفصل:</strong> ${escapeHtml(semester)}</div>
                     <div class="info-chip"><strong>🏫 المدرسة:</strong> ${escapeHtml(schoolName)}</div>
                 </div>
-                <div class="student-name-field">
-                    <span>👨‍🎓 اسم الطالب/الطالبة :</span>
-                    <span class="student-name-value">${escapeHtml(studentName)}</span>
+                <div class="total-score-box">
+                    <span class="score-label">📊 مجموع الدرجات</span>
+                    <div class="score-value">${escapeHtml(totalScore)}</div>
+                    <span class="score-placeholder">من ${escapeHtml(totalScore)}</span>
+                </div>
+            </div>
+            <div class="student-info-row" style="background: #f5f9fe; border-radius: 1rem; padding: 0.5rem 1.2rem; margin-bottom: 1.8rem; display: flex; align-items: center;">
+                <div class="student-name-field" style="background: transparent; padding: 0;">
+                    <span>👨‍🎓 اسم الطالب (ثلاثياً): </span>
+                    <span class="student-name-value" style="min-width: 250px; border-bottom: 1.5px solid #5f7da0;">${escapeHtml(studentNameRaw)}</span>
                 </div>
             </div>
         `;
@@ -537,10 +609,10 @@
         // بناء الأسئلة المقالية
         let questionsHTML = `<div class="questions-list-preview">`;
         if (!questionsList.length) {
-            questionsHTML += `<div style="padding: 2rem; text-align:center; color:#6f8fae;">⚠️ لا توجد أسئلة بعد، أضف أسئلة من لوحة التحرير.</div>`;
+            questionsHTML += `<div style="padding: 2rem; text-align:center; color:#6f8fae;">⚠️ لا توجد أسئلة حالياً، أضف أسئلة من لوحة التحرير.</div>`;
         } else {
             questionsList.forEach((qText, idx) => {
-                const displayText = qText.trim() === "" ? "(السؤال غير مكتوب بعد)" : qText;
+                const displayText = qText.trim() === "" ? "(لم يتم كتابة السؤال بعد)" : qText;
                 questionsHTML += `
                     <div class="preview-question">
                         <div class="preview-q-num">${idx+1}</div>
@@ -551,23 +623,49 @@
         }
         questionsHTML += `</div>`;
         
-        // إضافة مساحة للإجابة المقالية بشكل أنيق (اختياري)
-        const answerSpace = `<div style="margin-top: 2rem; border-top: 1px solid #e2edf7; padding-top: 1rem; font-size:0.8rem; color:#6a85a3;">✍️ مساحة الإجابة: يمكن للطالب الإجابة على ورقة منفصلة أو أسفل كل سؤال.</div>`;
+        // إضافة مساحة للإجابة (مخصصة للطالب)
+        const answerLine = `<div style="margin-top: 2rem; border-top: 1px solid #e2edf7; padding-top: 1rem; font-size:0.8rem; color:#6a85a3;">📝 مساحة الإجابة: يمكن للطالب الإجابة في الورقة نفسها أو على ورقة مستقلة.</div>`;
         
-        const finalRender = infoHTML + questionsHTML + answerSpace;
+        const finalRender = infoHTML + questionsHTML + answerLine;
         examPreviewDiv.innerHTML = finalRender;
     }
 
-    // ربط الأحداث للتغيير الفوري بالمعاينة
+    // ربط التغييرات المباشرة للمدخلات بتحديث المعاينة
     function bindPreviewEvents() {
         examNameInput.addEventListener('input', () => renderPreview());
         subjectInput.addEventListener('input', () => renderPreview());
         semesterInput.addEventListener('input', () => renderPreview());
         schoolNameInput.addEventListener('input', () => renderPreview());
         studentNameInput.addEventListener('input', () => renderPreview());
+        
+        // إضافة مستمع لحقل مجموع الدرجات (إن وجد)
+        const totalScoreField = document.getElementById('totalScoreInput');
+        if (totalScoreField) {
+            totalScoreField.addEventListener('input', () => renderPreview());
+        }
     }
     
-    // تصدير صورة من منطقة المعاينة باستخدام html2canvas
+    // إضافة حقل مجموع الدرجات ضمن واجهة التحرير (في form-grid) ليتمكن المستخدم من تحديد الدرجة بسهولة
+    function injectTotalScoreField() {
+        const formGrid = document.querySelector('.form-grid');
+        if (formGrid && !document.getElementById('totalScoreInput')) {
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'input-group';
+            scoreDiv.style.minWidth = '140px';
+            scoreDiv.innerHTML = `
+                <label>⭐ مجموع الدرجات</label>
+                <input type="text" id="totalScoreInput" placeholder="مثال: 30" value="30">
+            `;
+            formGrid.appendChild(scoreDiv);
+            // ربط الحدث بعد الإضافة
+            const newScoreInput = document.getElementById('totalScoreInput');
+            if (newScoreInput) {
+                newScoreInput.addEventListener('input', () => renderPreview());
+            }
+        }
+    }
+    
+    // ========= وظائف التصدير / الطباعة =========
     async function exportAsImage() {
         const element = document.getElementById('examPaperPreview');
         if (!element) return;
@@ -579,96 +677,91 @@
                 useCORS: false
             });
             const link = document.createElement('a');
-            link.download = `ورقة_اختبار_${Date.now()}.png`;
+            link.download = `ورقة_اختبار_الحسين_بن_علي_${Date.now()}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         } catch (err) {
             console.error(err);
-            alert("حدث خطأ أثناء إنشاء الصورة، تأكد من اتصال المكتبات.");
+            alert("حدث خطأ أثناء التصدير كصورة.");
         }
     }
     
-    // تصدير PDF بدقة عالية
     async function exportAsPDF() {
         const element = document.getElementById('examPaperPreview');
         if (!element) return;
         try {
-            const originalBtnText = exportPdfBtn.innerText;
-            exportPdfBtn.innerText = "⏳ جاري تحضير PDF...";
+            const originalText = exportPdfBtn.innerText;
+            exportPdfBtn.innerText = "⏳ جاري إنشاء PDF...";
             exportPdfBtn.disabled = true;
             const canvas = await html2canvas(element, {
-                scale: 2.5,
+                scale: 2.6,
                 backgroundColor: '#ffffff',
                 logging: false
             });
             const imgData = canvas.toDataURL('image/png');
             const { jsPDF } = window.jspdf;
-            const imgWidth = 210; // عرض A4 بالملم
+            const imgWidth = 210; // A4 width mm
             const pageHeight = 297;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             let pdf = new jsPDF('p', 'mm', 'a4');
-            let position = 0;
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             let heightLeft = imgHeight - pageHeight;
+            let position = -pageHeight;
             while (heightLeft > 0) {
                 position = heightLeft - imgHeight;
                 pdf.addPage();
                 pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                 heightLeft -= pageHeight;
             }
-            pdf.save(`الاختبار_${new Date().toISOString().slice(0,19)}.pdf`);
-            exportPdfBtn.innerText = originalBtnText;
+            pdf.save(`اختبار_متوسطة_الحسين_${Date.now()}.pdf`);
+            exportPdfBtn.innerText = originalText;
             exportPdfBtn.disabled = false;
         } catch (err) {
             exportPdfBtn.innerText = "📑 تصدير PDF";
             exportPdfBtn.disabled = false;
-            alert("فشل تصدير الـ PDF: " + err.message);
+            alert("فشل التصدير: " + err.message);
         }
     }
     
-    // طباعة الورقة مباشرة مع تصميم A4
     function printPreview() {
-        const previewContent = document.getElementById('examPaperPreview').cloneNode(true);
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>ورقة الاختبار - للطباعة</title><style>');
-        printWindow.document.write(`
-            * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Cairo', sans-serif; direction: rtl; }
-            body { padding: 0.7cm; background: white; }
-            .exam-paper { max-width: 100%; margin: 0 auto; }
-            .exam-info-block { background: #edf2f9; border-radius: 1.2rem; padding: 0.8rem 1.2rem; margin-bottom: 1.8rem; border: 1px solid #cfdfef; }
-            .info-row-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.8rem; }
-            .info-chip { background: #ffffffcc; padding: 0.3rem 1rem; border-radius: 2rem; font-size: 0.8rem; }
-            .student-name-field { background: #ffffffcc; padding: 0.3rem 1rem; border-radius: 2rem; display: inline-block; }
-            .student-name-value { border-bottom: 1px dashed #4d6a8f; min-width: 120px; display: inline-block; }
-            .questions-list-preview { display: flex; flex-direction: column; gap: 1rem; }
-            .preview-question { display: flex; gap: 0.8rem; border-bottom: 1px dashed #bbd0e8; padding-bottom: 0.6rem; align-items: flex-start; }
-            .preview-q-num { background: #eef2ff; width: 30px; height: 30px; border-radius: 30px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; }
-            .preview-q-text { font-size: 1rem; line-height: 1.4; }
-            @media print { body { margin:0; padding:0.6cm; } }
+        const content = document.getElementById('examPaperPreview').cloneNode(true);
+        const win = window.open('', '_blank');
+        win.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>ورقة اختبار - متوسطة الحسين بن علي</title><style>');
+        win.document.write(`
+            * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', 'Cairo', sans-serif; direction:rtl; }
+            body { padding:0.6cm; background:white; }
+            .exam-paper { max-width:100%; margin:auto; }
+            .exam-info-block { background:#ecf2f9; border-radius:1rem; padding:0.8rem 1rem; display:flex; justify-content:space-between; flex-wrap:wrap; align-items:center; margin-bottom:1.5rem; }
+            .info-left-group { display:flex; flex-wrap:wrap; gap:0.6rem; }
+            .info-chip { background:#ffffffcc; padding:0.3rem 1rem; border-radius:2rem; font-size:0.8rem; }
+            .total-score-box { background:#fff; border-radius:1rem; padding:0.3rem 1.2rem; text-align:center; }
+            .score-value { font-size:1.3rem; font-weight:bold; }
+            .student-name-field span { font-weight:bold; }
+            .student-name-value { border-bottom:1px solid #555; min-width:200px; display:inline-block; }
+            .preview-question { display:flex; gap:0.8rem; border-bottom:1px solid #cfdeef; padding-bottom:0.6rem; margin-bottom:0.8rem; }
+            .preview-q-num { background:#eef2ff; width:30px; height:30px; border-radius:30px; display:inline-flex; align-items:center; justify-content:center; }
+            @media print { body { margin:0; padding:0.5cm; } }
         `);
-        printWindow.document.write('</style></head><body>');
-        printWindow.document.write('<div class="exam-paper">');
-        printWindow.document.write(previewContent.innerHTML);
-        printWindow.document.write('</div></body></html>');
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
+        win.document.write('</style></head><body><div class="exam-paper">');
+        win.document.write(content.innerHTML);
+        win.document.write('</div></body></html>');
+        win.document.close();
+        win.focus();
+        win.print();
     }
     
-    // تهيئة عامة
+    // ========= التهيئة النهائية =========
     function init() {
+        injectTotalScoreField();      // إضافة حقل مجموع الدرجات في لوحة التحرير
         bindPreviewEvents();
         renderQuestionsEditor();
         updateMaxLimit();
         renderPreview();
-        
-        // ربط الأزرار
         addBtn.addEventListener('click', addNewQuestion);
         exportImageBtn.addEventListener('click', exportAsImage);
         exportPdfBtn.addEventListener('click', exportAsPDF);
         printBtn.addEventListener('click', printPreview);
     }
-    
     init();
 </script>
 </body>
