@@ -600,7 +600,7 @@
             </div>
             <div class="student-info-row" style="background: #f5f9fe; border-radius: 1rem; padding: 0.5rem 1.2rem; margin-bottom: 1.8rem; display: flex; align-items: center;">
                 <div class="student-name-field" style="background: transparent; padding: 0;">
-                    <span>👨‍🎓 اسم الطالب (ثلاثياً): </span>
+                    <span>👨‍🎓 اسم الطالب : </span>
                     <span class="student-name-value" style="min-width: 250px; border-bottom: 1.5px solid #5f7da0;">${escapeHtml(studentNameRaw)}</span>
                 </div>
             </div>
@@ -654,7 +654,7 @@
             scoreDiv.style.minWidth = '140px';
             scoreDiv.innerHTML = `
                 <label>⭐ مجموع الدرجات</label>
-                <input type="text" id="totalScoreInput" placeholder="مثال: 30" value="30">
+                <input type="text" id="totalScoreInput" placeholder="مثال: 30" value="-">
             `;
             formGrid.appendChild(scoreDiv);
             // ربط الحدث بعد الإضافة
