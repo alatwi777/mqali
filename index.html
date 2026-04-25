@@ -345,7 +345,8 @@
         .exam-info {
             font-weight: 700;
             color: #1f4970;
-            font-size: 1.1rem;
+            font-size: 1rem;
+            flex: 2;
         }
         .exam-actions {
             display: flex;
@@ -362,6 +363,9 @@
         }
         .small-btn.print { background: #2c628f; color: white; }
         .small-btn.pdf { background: #1f4a76; color: white; }
+        .small-btn.delete { background: #dc3545; color: white; }
+        .small-btn.delete:hover { background: #b02a37; transform: scale(0.96); }
+        .small-btn:hover { transform: translateY(-1px); }
         .empty-msg {
             background: #f8fafd;
             padding: 2rem;
@@ -432,7 +436,7 @@
             <div id="savedExamsList" class="saved-exams-list"></div>
         </div>
     </div>
-    <footer class="no-print">✧ حفظ تلقائي لجميع البيانات | أزرار إضافة الأسئلة والتصدير تعمل بشكل كامل ✧</footer>
+    <footer class="no-print">✧ حفظ تلقائي لجميع البيانات | يمكنك حذف أي اختبار من المكتبة عبر زر الحذف الأحمر ✧</footer>
 </div>
 
 <script>
@@ -568,7 +572,6 @@
                 textarea.value = questionsList[i];
                 textarea.placeholder = `نص السؤال المقالي ${i+1} ...`;
                 
-                // ربط التغيير
                 textarea.addEventListener('input', (function(idx) {
                     return function(e) {
                         questionsList[idx] = e.target.value;
@@ -603,19 +606,19 @@
             updateCounter();
         }
 
-        // ---------- إضافة سؤال (الوظيفة الأساسية التي كانت لا تعمل) ----------
+        // ---------- إضافة سؤال ----------
         function addNewQuestion() {
             if (questionsList.length >= 15) { 
                 alert("لا يمكن إضافة أكثر من 15 سؤالاً (الحد الأقصى للصفحة الواحدة)."); 
                 return; 
             }
             questionsList.push("سؤال مقالي جديد: اكتب نص السؤال هنا...");
-            renderQuestionsEditor();  // إعادة بناء واجهة الأسئلة
-            renderPreview();          // تحديث المعاينة
-            saveAutoSaveState();      // حفظ تلقائي
+            renderQuestionsEditor();
+            renderPreview();
+            saveAutoSaveState();
         }
 
-        // ---------- حفظ الاختبار في المكتبة ----------
+        // ---------- إدارة الاختبارات المحفوظة (مع زر الحذف) ----------
         function loadSavedExamsFromStorage() {
             const stored = localStorage.getItem('savedExams');
             if(stored) savedExams = JSON.parse(stored);
@@ -626,6 +629,15 @@
         function saveExamsToStorage() { 
             localStorage.setItem('savedExams', JSON.stringify(savedExams)); 
             renderSavedExamsList(); 
+        }
+        
+        // حذف اختبار معين
+        function deleteExam(examId) {
+            if (confirm("هل أنت متأكد من حذف هذا الاختبار؟ لا يمكن التراجع عن هذا الإجراء.")) {
+                savedExams = savedExams.filter(exam => exam.id !== examId);
+                saveExamsToStorage();
+                alert("✓ تم حذف الاختبار بنجاح");
+            }
         }
         
         function saveCurrentExamToLibrary() {
@@ -657,16 +669,17 @@
             let html = '';
             savedExams.forEach(exam => {
                 html += `<div class="exam-card" data-id="${exam.id}">
-                    <div class="exam-info"><strong>${escapeHtml(exam.name)}</strong> &nbsp;| ${escapeHtml(exam.subject)} | الفصل: ${escapeHtml(exam.semester)}</div>
+                    <div class="exam-info"><strong>${escapeHtml(exam.name)}</strong> &nbsp;| ${escapeHtml(exam.subject)} | الفصل: ${escapeHtml(exam.semester)} | ${escapeHtml(exam.questions.length)} سؤال</div>
                     <div class="exam-actions">
                         <button class="small-btn print" data-id="${exam.id}">🖨️ طباعة</button>
                         <button class="small-btn pdf" data-id="${exam.id}">📑 PDF</button>
+                        <button class="small-btn delete" data-id="${exam.id}">🗑️ حذف</button>
                     </div>
                 </div>`;
             });
             listDiv.innerHTML = html;
             
-            // ربط أزرار الطباعة و PDF
+            // ربط أزرار الطباعة
             document.querySelectorAll('.small-btn.print').forEach(btn => {
                 btn.addEventListener('click', (e) => { 
                     const id = parseInt(btn.getAttribute('data-id')); 
@@ -674,11 +687,19 @@
                     if(exam) printExamFromData(exam); 
                 });
             });
+            // ربط أزرار PDF
             document.querySelectorAll('.small-btn.pdf').forEach(btn => {
                 btn.addEventListener('click', async (e) => { 
                     const id = parseInt(btn.getAttribute('data-id')); 
                     const exam = savedExams.find(ex => ex.id === id); 
                     if(exam) await exportExamAsPDF(exam); 
+                });
+            });
+            // ربط أزرار الحذف
+            document.querySelectorAll('.small-btn.delete').forEach(btn => {
+                btn.addEventListener('click', (e) => { 
+                    const id = parseInt(btn.getAttribute('data-id')); 
+                    deleteExam(id); 
                 });
             });
         }
@@ -817,14 +838,12 @@
             renderPreview();
             loadSavedExamsFromStorage();
             
-            // ربط الأزرار (تم تعريفها بشكل صحيح)
             if(addQuestionBtn) addQuestionBtn.addEventListener('click', addNewQuestion);
             if(saveExamBtn) saveExamBtn.addEventListener('click', saveCurrentExamToLibrary);
             if(exportImageBtn) exportImageBtn.addEventListener('click', exportCurrentAsImage);
             if(exportPdfBtn) exportPdfBtn.addEventListener('click', exportCurrentAsPDF);
             if(printBtn) printBtn.addEventListener('click', printCurrent);
             
-            // حفظ تلقائي عند إغلاق الصفحة
             window.addEventListener('beforeunload', () => { saveAutoSaveState(); });
         }
         
