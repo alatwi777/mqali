@@ -3,913 +3,661 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>منصة الاختبارات التفاعلية | متوسطة الحسين بن علي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>مصمم الاختبارات الاحترافي | أسئلة مقالية</title>
+    <!-- المكتبات المطلوبة للتصدير والطباعة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Segoe UI', 'Tajawal', 'Roboto', system-ui, -apple-system, 'Cairo', sans-serif;
         }
 
         body {
-            background: linear-gradient(145deg, #eef2f7 0%, #d9e2ec 100%);
+            background: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%);
             min-height: 100vh;
-            padding: 25px 20px;
-        }
-
-        .exam-platform {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #ffffffdd;
-            backdrop-filter: blur(3px);
-            border-radius: 2rem;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.15);
-            overflow: hidden;
-        }
-
-        .header-cliche {
-            background: linear-gradient(135deg, #0b2b44, #1a4a6f);
-            padding: 1rem 2rem;
-            text-align: center;
-            color: white;
-            border-bottom: 4px solid #ffc107;
-        }
-        .header-cliche h2 { font-size: 1.4rem; font-weight: 700; }
-        .header-cliche p { font-size: 0.85rem; opacity: 0.9; }
-
-        .tabs-section {
+            padding: 40px 20px;
             display: flex;
-            gap: 12px;
-            padding: 20px 30px 0 30px;
-            background: #f8fafd;
-            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
         }
-        .tab-btn {
-            background: #e9ecef;
-            border: none;
-            padding: 12px 28px;
+
+        /* حاوية التطبيق الرئيسية */
+        .app-container {
+            max-width: 1300px;
+            width: 100%;
+            margin: 0 auto;
+            background: transparent;
+        }
+
+        /* لوحة تحرير الاختبار (واجهة الإدخال) */
+        .editor-panel {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(255,255,255,0.6);
+            transition: all 0.2s;
+        }
+
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            border-bottom: 2px dashed #b9cbee;
+            padding-bottom: 1.5rem;
+        }
+
+        .input-group {
+            flex: 1 1 200px;
+            min-width: 180px;
+        }
+
+        .input-group label {
+            display: block;
             font-weight: 700;
-            border-radius: 40px 40px 20px 20px;
+            color: #1e2f5e;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 1.2rem;
+            border: 1px solid #cddfed;
+            background: white;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #3b71ca;
+            box-shadow: 0 0 0 3px rgba(59,113,202,0.2);
+        }
+
+        .questions-area {
+            margin-top: 1rem;
+        }
+
+        .question-item {
+            background: #f9fcff;
+            margin-bottom: 1rem;
+            padding: 1rem 1.2rem;
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border-right: 5px solid #2c6e9e;
+        }
+
+        .question-number {
+            font-weight: 800;
+            background: #2c6e9e;
+            color: white;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 40px;
+            font-size: 1.1rem;
+        }
+
+        .question-text {
+            flex: 8;
+            min-width: 200px;
+        }
+
+        .question-text textarea {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 1.2rem;
+            border: 1px solid #cbdbe0;
+            resize: vertical;
+            font-size: 0.95rem;
+            background: white;
+        }
+
+        .remove-question {
+            background: #ffe1e1;
+            border: none;
+            color: #b00020;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
             cursor: pointer;
-            transition: 0.25s;
+            transition: 0.2s;
+        }
+
+        .remove-question:hover {
+            background: #ffc2c2;
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: linear-gradient(95deg, #1e466e, #2b5a8c);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2.5rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.5rem;
+            margin-left: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+            background: linear-gradient(95deg, #123a5a, #1f4f7a);
+        }
+
+        .btn-secondary {
+            background: #f0f4fa;
+            border: 1px solid #b9cef0;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            margin-left: 0.8rem;
+            transition: 0.2s;
+            color: #1f3b62;
+        }
+
+        .btn-secondary:hover {
+            background: #e3ebf6;
+            transform: scale(0.98);
+        }
+
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 12px;
+            margin-top: 20px;
+            border-top: 1px solid #cddfed;
+            padding-top: 20px;
+        }
+
+        /* ========= ورقة الاختبار النهائية (معاينة + تصدير/طباعة) ========= */
+        .preview-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2f4e;
+            letter-spacing: -0.2px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        .tab-btn.active {
-            background: #ffffff;
-            color: #1e6f3f;
-            border-bottom: 3px solid #2e7d32;
-        }
-        .tab-content { display: none; padding: 30px; background: #ffffff; border-radius: 0 0 2rem 2rem; animation: fadeSlide 0.3s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
 
-        .card-panel {
-            background: #fefefe;
+        .exam-paper {
+            background: white;
             border-radius: 28px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            border: 1px solid #eef2f6;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            transition: all 0.2s;
+            padding: 1.8rem 2rem 2.5rem 2rem;
+            /* محاكاة ورقة A4 */
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
         }
-        .btn {
-            border: none;
-            padding: 10px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
+
+        /* تخطيط معلومات الاختبار: بجانب بعض في سطر واحد */
+        .exam-info-row {
+            background: #eef2f9;  /* رمادي فاتح أنيق */
+            border-radius: 1.5rem;
+            padding: 1rem 1.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 1px 2px #ffffff80, 0 2px 5px rgba(0,0,0,0.02);
+            border: 1px solid #dfe8f2;
+        }
+
+        .info-chip {
+            background: #ffffffcc;
+            backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            color: #1a2c44;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            font-size: 0.9rem;
+        }
+
+        .info-chip strong {
+            font-weight: 800;
+            margin-left: 6px;
+            color: #0f3b5c;
+        }
+
+        .questions-list-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .preview-question {
+            border-bottom: 1px dashed #cbdbe6;
+            padding-bottom: 0.9rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .preview-q-num {
+            font-weight: 800;
+            background: #eef2ff;
+            width: 32px;
+            height: 32px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
-        .btn-primary { background: #1e6f3f; color: white; }
-        .btn-primary:hover { background: #0f552f; transform: translateY(-2px); }
-        .btn-secondary { background: #ffb74d; color: #3e2a1f; }
-        .btn-outline { border: 1.5px solid #2c7a4a; background: white; color: #2c7a4a; }
-        .question-item {
-            background: #f9fafc;
-            border-radius: 24px;
-            padding: 18px;
-            margin-bottom: 20px;
-            border-right: 6px solid #2e7d32;
-        }
-        textarea { width: 100%; border-radius: 24px; border: 1px solid #cfdfed; padding: 12px; font-size: 1rem; }
-        .student-answer-area { background: #fef7e0; border-radius: 20px; padding: 15px; margin-top: 10px; }
-        .result-navigation { display: flex; align-items: center; justify-content: space-between; background: #eef3fa; padding: 12px 20px; border-radius: 60px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .answer-preview-card { background: white; border-radius: 28px; padding: 20px; max-height: 550px; overflow-y: auto; }
-        .grade-input-small { width: 80px; padding: 5px; border-radius: 20px; text-align: center; border: 1px solid #ccc; }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
             justify-content: center;
-            z-index: 1000;
+            border-radius: 30px;
+            color: #2c6e9e;
+            flex-shrink: 0;
         }
-        .modal-card {
-            background: white;
-            border-radius: 48px;
-            padding: 30px;
-            width: 90%;
-            max-width: 450px;
-            text-align: center;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
-            position: relative;
-        }
-        .modal-card h3 { margin-bottom: 20px; color: #1e6f3f; }
-        .modal-card input {
-            width: 100%;
-            margin: 10px 0;
-            padding: 12px;
-            border-radius: 60px;
-            border: 1px solid #ccc;
+
+        .preview-q-text {
             font-size: 1rem;
+            line-height: 1.5;
+            color: #1f2f42;
+            font-weight: 500;
+            word-break: break-word;
+            white-space: pre-wrap;
+            flex: 1;
         }
-        .teacher-icon {
-            position: absolute;
-            top: 15px;
-            left: 20px;
-            font-size: 28px;
-            color: #ffb74d;
-            cursor: pointer;
-            background: #f0f0f0;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
+
+        /* تنسيق الطباعة - صفحة A4 احترافية */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .editor-panel, .action-bar, .preview-title, .btn-primary, .btn-secondary, .no-print {
+                display: none !important;
+            }
+            .exam-paper {
+                box-shadow: none;
+                padding: 0.8cm;
+                border-radius: 0;
+                margin: 0 auto;
+                width: 100%;
+            }
+            .exam-info-row {
+                background: #e9ecef !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            .preview-question {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            .questions-list-preview {
+                gap: 1rem;
+            }
+            @page {
+                size: A4;
+                margin: 1.2cm;
+            }
         }
-        .teacher-icon:hover { background: #ffb74d; color: white; transform: scale(1.05); }
-        footer { background: #f1f5f9; text-align: center; padding: 12px; font-size: 0.75rem; color: #4a627a; }
-        .locked-message { background: #fff3e0; padding: 15px; border-radius: 28px; margin-top: 20px; text-align: center; }
-        .password-prompt { margin-top: 10px; }
-        .active-teacher-tab { background: #1e6f3f; color: white; border-color: #1e6f3f; }
-        .sub-tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; }
-        .sub-tab-buttons .btn { background: #e9ecef; color: #333; }
-        .sub-tab-buttons .btn.active-teacher-tab { background: #1e6f3f; color: white; }
-        .error-message { color: red; font-size: 0.9rem; margin-top: 10px; }
-        .success-message { color: green; font-size: 0.9rem; margin-top: 10px; }
-        .info-message { color: #ff9800; font-size: 0.9rem; margin-top: 10px; }
-        .teacher-locked-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            flex-direction: column;
+
+        /* حد أقصى 15 سؤال تحذير بشري */
+        .warning-limit {
+            color: #c25a2c;
+            font-size: 0.8rem;
+            margin-top: 6px;
+            font-weight: 500;
         }
-        .teacher-lock-card {
-            background: white;
-            border-radius: 48px;
-            padding: 40px;
+
+        footer {
+            font-size: 0.7rem;
             text-align: center;
-            max-width: 400px;
-            width: 90%;
+            margin-top: 20px;
+            color: #2b4f6e;
         }
     </style>
 </head>
 <body>
-
-<div class="exam-platform">
-    <div class="header-cliche">
-        <div>
-            <h2>المملكة العربية السعودية</h2>
-            <p>وزارة التعليم | إدارة منطقة تبوك | متوسطة الحسين بن علي</p>
-        </div>
-    </div>
-
-    <div class="tabs-section">
-        <button class="tab-btn active" data-tab="studentTab"><i class="fas fa-user-edit"></i> الطالب</button>
-        <button class="tab-btn" data-tab="teacherTab" id="teacherTabBtn"><i class="fas fa-chalkboard-teacher"></i> المعلم</button>
-    </div>
-
-    <!-- تبويب الطالب -->
-    <div id="studentTab" class="tab-content active">
-        <div class="card-panel">
-            <h3><i class="fas fa-question-circle"></i> أسئلة الاختبار المقالية</h3>
-            <div id="studentQuestionsArea"></div>
-            <div id="studentSubmitArea">
-                <button id="submitStudentAnswers" class="btn btn-primary"><i class="fas fa-paper-plane"></i> إرسال الإجابات وإنهاء الاختبار</button>
+<div class="app-container">
+    <!-- لوحة تحرير الاختبار (قابلة للتحكم) -->
+    <div class="editor-panel no-print">
+        <h2 style="color:#1e3a5f; margin-bottom: 1rem;">📝 إنشاء اختبار مقالات</h2>
+        <div class="form-grid">
+            <div class="input-group">
+                <label>📌 اسم الاختبار</label>
+                <input type="text" id="examName" placeholder="مثال: اختبار منتصف الفصل" value="الاختبار النهائي">
             </div>
-            <div id="studentSubmitMsg"></div>
-            <div id="studentLockedMsg" class="locked-message" style="display:none;"></div>
+            <div class="input-group">
+                <label>📚 المادة</label>
+                <input type="text" id="subject" placeholder="الرياضيات / العلوم" value="اللغة العربية">
+            </div>
+            <div class="input-group">
+                <label>📅 الفصل الدراسي</label>
+                <input type="text" id="semester" placeholder="الفصل الأول 1446" value="الفصل الدراسي الثاني">
+            </div>
+            <div class="input-group">
+                <label>🏫 اسم المدرسة</label>
+                <input type="text" id="schoolName" placeholder="مدرسة النخبة" value="مدرسة الأندلس النموذجية">
+            </div>
+        </div>
+
+        <div class="questions-area">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+                <h3 style="color:#1f4970;">✍️ الأسئلة المقالية</h3>
+                <span id="questionCounterDisplay" style="background:#eef2fa; padding: 4px 12px; border-radius: 30px;">0 / 15 سؤال</span>
+            </div>
+            <div id="dynamicQuestionsContainer"></div>
+            <div class="action-bar">
+                <button id="addQuestionBtn" class="btn-primary">➕ إضافة سؤال</button>
+                <button id="exportImageBtn" class="btn-primary">🖼️ تصدير صورة (PNG)</button>
+                <button id="exportPdfBtn" class="btn-primary">📑 تصدير PDF</button>
+                <button id="printBtn" class="btn-secondary">🖨️ طباعة الورقة</button>
+            </div>
+            <div id="maxWarning" class="warning-limit"></div>
         </div>
     </div>
 
-    <!-- تبويب المعلم - سيتم حمايته بالرقم السري لاحقاً -->
-    <div id="teacherTab" class="tab-content">
-        <div id="teacherProtectedContainer">
-            <!-- سيتم وضع المحتوى هنا ديناميكياً -->
-        </div>
+    <!-- معاينة الورقة النهائية (معلومات + أسئلة) وسيتم تحديثها مباشرة -->
+    <div class="preview-title no-print">
+        <span>📄 معاينة ورقة الاختبار (A4)</span>
     </div>
-    <footer>منصة تفاعلية - حفظ تلقائي لجميع البيانات</footer>
+    <div id="examPaperPreview" class="exam-paper">
+        <!-- سيتم تعبئتها بواسطة JS -->
+        <div style="text-align: center; color: #6c86a3;">جاري تحميل المعاينة...</div>
+    </div>
+    <footer class="no-print">✦ حد أقصى 15 سؤالاً في الصفحة الواحدة | تصميم احترافي لأسئلة مقالية ✦</footer>
 </div>
 
 <script>
-    // ========== المتغيرات العامة ==========
-    let examQuestions = [];
-    let studentAnswersList = [];
-    let currentAnswerIndex = 0;
-    let teacherSecret = localStorage.getItem('teacher_secret') || "";  // لا يوجد رقم سري افتراضي
-    let isTeacherUnlocked = false;
-    let currentStudentData = { name: "", grade: "", subject: "" };
-    let studentSubmitLocked = false;
-    let teacherContentHTML = null;
+    // مصفوفة الأسئلة (نصوص)
+    let questionsList = [
+        "اشرح بإيجاز مفهوم التكنولوجيا الخضراء وأهميتها في الحفاظ على البيئة.",
+        "اكتب مقالة قصيرة عن أثر القراءة في تنمية الفكر الإبداعي لدى الطلاب."
+    ];
 
     // عناصر DOM
-    const teacherContainer = document.getElementById('teacherProtectedContainer');
-    const studentArea = document.getElementById('studentQuestionsArea');
-    const previewAreaPlaceholder = document.createElement('div'); // مؤقت
-    const submitBtn = document.getElementById('submitStudentAnswers');
-    const studentSubmitMsgDiv = document.getElementById('studentSubmitMsg');
-    const studentLockedMsgDiv = document.getElementById('studentLockedMsg');
-    const teacherTabBtn = document.getElementById('teacherTabBtn');
+    const container = document.getElementById('dynamicQuestionsContainer');
+    const examPaperPreview = document.getElementById('examPaperPreview');
+    const addBtn = document.getElementById('addQuestionBtn');
+    const exportImageBtn = document.getElementById('exportImageBtn');
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    const printBtn = document.getElementById('printBtn');
+    const maxWarningSpan = document.getElementById('maxWarning');
+    const questionCounterSpan = document.getElementById('questionCounterDisplay');
 
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;});}
+    // عناصر الحقول
+    const examNameInput = document.getElementById('examName');
+    const subjectInput = document.getElementById('subject');
+    const semesterInput = document.getElementById('semester');
+    const schoolNameInput = document.getElementById('schoolName');
 
-    function saveAllToLocal() {
-        localStorage.setItem('exam_questions', JSON.stringify(examQuestions));
-        localStorage.setItem('student_submissions', JSON.stringify(studentAnswersList));
-        updateStats();
-    }
-
-    function updateStats() {
-        const statsDiv = document.getElementById('questionsStats');
-        if(statsDiv) {
-            let total = examQuestions.reduce((sum, q) => sum + (parseFloat(q.grade) || 0), 0);
-            statsDiv.innerHTML = `<i class="fas fa-calculator"></i> عدد الأسئلة: ${examQuestions.length} | مجموع الدرجات: ${total}`;
-        }
-    }
-
-    // بناء واجهة المعلم الكاملة (داخلة في قفل أو بدون قفل)
-    function buildTeacherUI() {
-        return `
-            <div class="sub-tab-buttons">
-                <button id="teacherQuestionsTabBtn" class="btn">📝 الأسئلة المقالية</button>
-                <button id="teacherResultsTabBtn" class="btn">📊 النتائج والتصحيح</button>
-                <button id="teacherSettingsTabBtn" class="btn">⚙️ إعدادات الرقم السري</button>
-            </div>
-            
-            <div id="teacherQuestionsPanel">
-                <div class="card-panel">
-                    <h3><i class="fas fa-pen-alt"></i> إنشاء أسئلة مقالية</h3>
-                    <div id="questionsContainerTeacher"></div>
-                    <div style="display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap;">
-                        <button id="addQuestionBtn" class="btn btn-primary"><i class="fas fa-plus-circle"></i> إضافة سؤال</button>
-                        <button id="saveExamBtn" class="btn btn-secondary"><i class="fas fa-save"></i> حفظ الأسئلة</button>
-                    </div>
-                    <div id="questionsStats" style="background: #e8f0fe; padding: 12px; border-radius: 28px; font-weight: bold;"></div>
-                    <div id="teacherMsg" class="success-message"></div>
-                </div>
-            </div>
-            
-            <div id="teacherResultsPanel" style="display: none;">
-                <div class="card-panel">
-                    <h3><i class="fas fa-chart-line"></i> النتائج والإجابات (تصحيح يدوي)</h3>
-                    <div class="result-navigation">
-                        <div><i class="fas fa-scroll"></i> <strong>التنقل بين الطلاب:</strong></div>
-                        <div>
-                            <button id="prevAnswerBtn" class="btn btn-outline"><i class="fas fa-chevron-right"></i> السابق</button>
-                            <span id="answerCounter" style="margin: 0 10px;">الطالب 1 / 1</span>
-                            <button id="nextAnswerBtn" class="btn btn-outline">التالي <i class="fas fa-chevron-left"></i></button>
-                        </div>
-                        <button id="exportGradesBtn" class="btn btn-outline"><i class="fas fa-download"></i> تصدير (الاسم + الدرجة)</button>
-                        <button id="printResultsBtn" class="btn btn-outline"><i class="fas fa-print"></i> طباعة كاملة</button>
-                    </div>
-                    <div id="answersPreviewArea" class="answer-preview-card">
-                        <p>لا توجد إجابات بعد</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="teacherSettingsPanel" style="display: none;">
-                <div class="card-panel">
-                    <h3><i class="fas fa-key"></i> تعيين / تغيير الرقم السري للمعلم</h3>
-                    <div id="secretStatusMsg" class="info-message"></div>
-                    <div style="margin-top: 20px;">
-                        <input type="password" id="newSecretInput" placeholder="الرقم السري الجديد" style="width: 200px;">
-                        <button id="setSecretBtn" class="btn btn-primary"><i class="fas fa-save"></i> تعيين الرقم السري</button>
-                    </div>
-                    <div id="secretChangeMsg" class="success-message"></div>
-                    <div style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 20px;">
-                        <small><i class="fas fa-info-circle"></i> الرجاء تعيين رقم سري لحماية لوحة المعلم. لن يتمكن الطالب من الوصول إلى هذه الصفحة إلا بعد إدخال الرقم السري.</small>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    // عرض شاشة قفل المعلم
-    function showTeacherLockScreen() {
-        if(!teacherContainer) return;
-        teacherContainer.innerHTML = `
-            <div style="text-align: center; padding: 50px 20px;">
-                <i class="fas fa-lock" style="font-size: 64px; color: #ffb74d; margin-bottom: 20px;"></i>
-                <h3>منطقة المعلم محمية</h3>
-                <p>الرجاء إدخال الرقم السري للوصول إلى لوحة التحكم</p>
-                <div class="password-prompt" style="margin-top: 20px;">
-                    <input type="password" id="teacherPasswordInput" placeholder="الرقم السري" style="width: 250px; padding: 12px; border-radius: 60px; border: 1px solid #ccc;">
-                    <br><br>
-                    <button id="unlockTeacherBtn" class="btn btn-primary">فتح الوصول</button>
-                </div>
-                <div id="teacherLockError" class="error-message" style="margin-top: 15px;"></div>
-            </div>
-        `;
-        
-        const unlockBtn = document.getElementById('unlockTeacherBtn');
-        const passInput = document.getElementById('teacherPasswordInput');
-        const errorDiv = document.getElementById('teacherLockError');
-        
-        if(unlockBtn) {
-            unlockBtn.addEventListener('click', () => {
-                const entered = passInput.value.trim();
-                if(teacherSecret && entered === teacherSecret) {
-                    isTeacherUnlocked = true;
-                    loadTeacherContent();
-                } else {
-                    errorDiv.innerText = '❌ الرقم السري غير صحيح';
-                }
-            });
-            if(passInput) {
-                passInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') unlockBtn.click(); });
-            }
-        }
-    }
-    
-    // تحميل محتوى المعلم بعد فتح القفل
-    function loadTeacherContent() {
-        if(!teacherContainer) return;
-        teacherContainer.innerHTML = teacherContentHTML;
-        
-        // إعادة ربط الأحداث
-        const teacherQuestionsContainer = document.getElementById('questionsContainerTeacher');
-        const previewArea = document.getElementById('answersPreviewArea');
-        
-        if(teacherQuestionsContainer) renderTeacherQuestionsInto(teacherQuestionsContainer);
-        if(previewArea) renderResultsPreviewInto(previewArea);
-        
-        // ربط أزرار التبويبات الداخلية
-        const questionsTab = document.getElementById('teacherQuestionsTabBtn');
-        const resultsTab = document.getElementById('teacherResultsTabBtn');
-        const settingsTab = document.getElementById('teacherSettingsTabBtn');
-        const questionsPanel = document.getElementById('teacherQuestionsPanel');
-        const resultsPanel = document.getElementById('teacherResultsPanel');
-        const settingsPanel = document.getElementById('teacherSettingsPanel');
-        
-        const removeActiveClass = () => {
-            if(questionsTab) questionsTab.classList.remove('active-teacher-tab');
-            if(resultsTab) resultsTab.classList.remove('active-teacher-tab');
-            if(settingsTab) settingsTab.classList.remove('active-teacher-tab');
-        };
-        
-        if(questionsTab) {
-            questionsTab.addEventListener('click', () => {
-                if(questionsPanel) questionsPanel.style.display = 'block';
-                if(resultsPanel) resultsPanel.style.display = 'none';
-                if(settingsPanel) settingsPanel.style.display = 'none';
-                removeActiveClass();
-                questionsTab.classList.add('active-teacher-tab');
-            });
-        }
-        if(resultsTab) {
-            resultsTab.addEventListener('click', () => {
-                if(questionsPanel) questionsPanel.style.display = 'none';
-                if(resultsPanel) resultsPanel.style.display = 'block';
-                if(settingsPanel) settingsPanel.style.display = 'none';
-                removeActiveClass();
-                resultsTab.classList.add('active-teacher-tab');
-                const newPreviewArea = document.getElementById('answersPreviewArea');
-                if(newPreviewArea) renderResultsPreviewInto(newPreviewArea);
-            });
-        }
-        if(settingsTab) {
-            settingsTab.addEventListener('click', () => {
-                if(questionsPanel) questionsPanel.style.display = 'none';
-                if(resultsPanel) resultsPanel.style.display = 'none';
-                if(settingsPanel) settingsPanel.style.display = 'block';
-                removeActiveClass();
-                settingsTab.classList.add('active-teacher-tab');
-                setupSecretSettings();
-            });
-        }
-        
-        if(questionsPanel) questionsPanel.style.display = 'block';
-        if(resultsPanel) resultsPanel.style.display = 'none';
-        if(settingsPanel) settingsPanel.style.display = 'none';
-        if(questionsTab) questionsTab.classList.add('active-teacher-tab');
-        
-        // ربط أزرار الأسئلة
-        const addBtn = document.getElementById('addQuestionBtn');
-        if(addBtn) {
-            addBtn.addEventListener('click', () => {
-                examQuestions.push({questionText: "سؤال مقالي جديد", grade: 5});
-                const container = document.getElementById('questionsContainerTeacher');
-                if(container) renderTeacherQuestionsInto(container);
-                saveAllToLocal();
-                renderStudentQuestionsUI();
-            });
-        }
-        
-        const saveBtn = document.getElementById('saveExamBtn');
-        if(saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                saveAllToLocal();
-                renderStudentQuestionsUI();
-                const teacherMsg = document.getElementById('teacherMsg');
-                if(teacherMsg) {
-                    teacherMsg.innerHTML = '✅ تم حفظ الأسئلة وإتاحتها للطلاب.';
-                    setTimeout(()=> teacherMsg.innerHTML = '', 2000);
-                }
-            });
-        }
-        
-        const exportBtn = document.getElementById('exportGradesBtn');
-        if(exportBtn) {
-            exportBtn.addEventListener('click', () => {
-                if(studentAnswersList.length === 0) { alert("لا توجد بيانات لتصديرها"); return; }
-                let csvRows = [["اسم الطالب", "الدرجة الكلية"]];
-                studentAnswersList.forEach(s => {
-                    let total = s.answers.reduce((sum, a) => sum + (a.manualGrade !== undefined && a.manualGrade !== null ? parseFloat(a.manualGrade) : 0), 0);
-                    csvRows.push([s.studentName, total]);
-                });
-                let csvContent = csvRows.map(row => row.join(",")).join("\n");
-                let blob = new Blob(["\uFEFF" + csvContent], {type: "text/csv;charset=utf-8;"});
-                let link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = "نتائج_الطلاب.csv";
-                link.click();
-                URL.revokeObjectURL(link.href);
-            });
-        }
-        
-        const printBtn = document.getElementById('printResultsBtn');
-        if(printBtn) {
-            printBtn.addEventListener('click', () => {
-                let win = window.open('', '_blank');
-                let html = `<html dir="rtl"><head><title>النتائج</title><style>body{font-family:Tajawal; padding:20px;}</style></head><body><h2>نتائج الطلاب - متوسطة الحسين بن علي</h2>`;
-                studentAnswersList.forEach(s => {
-                    html += `<div style="border:1px solid #ccc; border-radius:16px; padding:15px; margin-bottom:20px;"><h3>${s.studentName} - ${s.studentGrade}</h3><p>المادة: ${s.studentSubject} | التاريخ: ${s.submittedAt}</p>`;
-                    s.answers.forEach((a, i) => {
-                        let final = (a.manualGrade !== undefined && a.manualGrade !== null) ? a.manualGrade : "لم تصحح بعد";
-                        html += `<p><strong>س${i+1}:</strong> ${a.questionText}<br>📝 إجابة الطالب: ${a.answerText || "(فارغة)"}<br>⭐ الدرجة المعطاة: ${final} / ${a.gradeValue}</p><hr>`;
-                    });
-                    html += `</div>`;
-                });
-                html += `</body></html>`;
-                win.document.write(html);
-                win.document.close();
-                win.print();
-            });
-        }
-        
-        const prevBtn = document.getElementById('prevAnswerBtn');
-        const nextBtn = document.getElementById('nextAnswerBtn');
-        if(prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex - 1 + studentAnswersList.length) % studentAnswersList.length;
-                const newPreviewArea = document.getElementById('answersPreviewArea');
-                if(newPreviewArea) renderResultsPreviewInto(newPreviewArea);
-            });
-        }
-        if(nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                if(studentAnswersList.length) currentAnswerIndex = (currentAnswerIndex + 1) % studentAnswersList.length;
-                const newPreviewArea = document.getElementById('answersPreviewArea');
-                if(newPreviewArea) renderResultsPreviewInto(newPreviewArea);
-            });
-        }
-        
-        setupSecretSettings();
-    }
-    
-    function renderTeacherQuestionsInto(container) {
-        if(!container) return;
-        if(examQuestions.length === 0) {
-            container.innerHTML = '<div style="background:#f1f8e9; padding:20px; border-radius:24px;">📌 لا توجد أسئلة، أضف سؤالاً جديداً</div>';
-            updateStats();
-            return;
-        }
-        let html = '';
-        examQuestions.forEach((q, idx) => {
-            html += `
-                <div class="question-item" data-qidx="${idx}">
-                    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                        <strong>السؤال ${idx+1}</strong>
-                        <button class="btn btn-outline removeQuestionBtn" data-idx="${idx}" style="background:#ffe0e0; border-color:#ff9999;"><i class="fas fa-trash-alt"></i> حذف</button>
-                    </div>
-                    <label>نص السؤال المقالي:</label>
-                    <textarea class="teacher-question-text" data-idx="${idx}" placeholder="اكتب السؤال..." rows="2">${escapeHtml(q.questionText)}</textarea>
-                    <label style="margin-top:10px;">الدرجة:</label>
-                    <input type="number" class="teacher-grade-input" data-idx="${idx}" value="${q.grade}" min="0" max="30" step="0.5" style="width:100px;">
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-        
-        document.querySelectorAll('.removeQuestionBtn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                let idx = parseInt(btn.getAttribute('data-idx'));
-                examQuestions.splice(idx, 1);
-                renderTeacherQuestionsInto(container);
-                saveAllToLocal();
-                renderStudentQuestionsUI();
-            });
-        });
-        document.querySelectorAll('.teacher-question-text').forEach(txt => {
-            txt.addEventListener('input', function() {
-                let idx = parseInt(this.getAttribute('data-idx'));
-                examQuestions[idx].questionText = this.value;
-                updateStats(); saveAllToLocal(); renderStudentQuestionsUI();
-            });
-        });
-        document.querySelectorAll('.teacher-grade-input').forEach(inp => {
-            inp.addEventListener('change', function() {
-                let idx = parseInt(this.getAttribute('data-idx'));
-                let val = parseFloat(this.value);
-                examQuestions[idx].grade = isNaN(val)?0:val;
-                updateStats(); saveAllToLocal(); renderStudentQuestionsUI();
-            });
-        });
-        updateStats();
-    }
-    
-    function renderResultsPreviewInto(container) {
-        if(!container) return;
-        if(studentAnswersList.length === 0) {
-            container.innerHTML = '<p style="text-align:center; padding:40px;">📭 لا توجد إجابات مرسلة بعد.</p>';
-            const counter = document.getElementById('answerCounter');
-            if(counter) counter.innerText = `0 / 0`;
-            return;
-        }
-        if(currentAnswerIndex >= studentAnswersList.length) currentAnswerIndex = studentAnswersList.length-1;
-        if(currentAnswerIndex < 0) currentAnswerIndex = 0;
-        const student = studentAnswersList[currentAnswerIndex];
-        const counter = document.getElementById('answerCounter');
-        if(counter) counter.innerText = `الطالب ${currentAnswerIndex+1} / ${studentAnswersList.length}`;
-        
-        let html = `<div><h4><i class="fas fa-user"></i> الاسم: ${escapeHtml(student.studentName)} | الصف: ${student.studentGrade} | المادة: ${student.studentSubject}</h4>`;
-        html += `<p><i class="far fa-calendar-alt"></i> تاريخ الإرسال: ${student.submittedAt}</p><hr>`;
-        student.answers.forEach((ans, idx) => {
-            let manualGrade = (ans.manualGrade !== undefined && ans.manualGrade !== null) ? ans.manualGrade : (ans.gradeValue || 0);
-            html += `
-                <div style="margin-bottom: 20px; border-right: 3px solid #2196f3; padding-right: 12px;">
-                    <strong>س${idx+1}:</strong> ${escapeHtml(ans.questionText)} <br/>
-                    <div style="background:#fff3e0; padding:10px; border-radius:16px; margin-top:8px;">
-                        <i class="fas fa-pen-fancy"></i> <strong>إجابة الطالب:</strong><br/> ${escapeHtml(ans.answerText) || "⚠️ لم يقدم إجابة"}
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <label>الدرجة التي يمنحها المعلم: </label>
-                        <input type="number" class="grade-input-small manual-grade-input" data-std-index="${currentAnswerIndex}" data-qidx="${idx}" value="${manualGrade}" step="0.5" min="0" max="${ans.gradeValue}" style="width:90px;">
-                        <span> من ${ans.gradeValue}</span>
-                    </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-        container.innerHTML = html;
-
-        document.querySelectorAll('.manual-grade-input').forEach(inp => {
-            inp.addEventListener('change', function() {
-                let stdIdx = parseInt(this.getAttribute('data-std-index'));
-                let qIdx = parseInt(this.getAttribute('data-qidx'));
-                let newGrade = parseFloat(this.value);
-                if(!isNaN(newGrade) && studentAnswersList[stdIdx] && studentAnswersList[stdIdx].answers[qIdx]) {
-                    studentAnswersList[stdIdx].answers[qIdx].manualGrade = newGrade;
-                    saveAllToLocal();
-                }
-            });
-        });
-    }
-    
-    function renderStudentQuestionsUI() {
-        if(!studentArea) return;
-        if(examQuestions.length === 0) {
-            studentArea.innerHTML = '<p style="background:#fff3e0; padding:20px; border-radius:24px;">📢 لم يقم المعلم بإرسال الأسئلة بعد.</p>';
-            return;
-        }
-        if(studentSubmitLocked) {
-            studentArea.innerHTML = `<div class="locked-message"><i class="fas fa-ban"></i> لقد أنهيت الاختبار مسبقاً. لا يمكنك تغيير الإجابات.<br>如需重考، يرجى الاتصال بالمعلم (الرقم السري).</div>`;
-            return;
-        }
-        let html = `<div><strong>⚡ أجب كتابة بالقلم:</strong></div>`;
-        examQuestions.forEach((q, idx) => {
-            let savedVal = (localStorage.getItem(`temp_answer_${idx}`) || '');
-            html += `
-                <div class="question-item">
-                    <div><strong>س${idx+1}:</strong> ${escapeHtml(q.questionText)} <span style="background:#f5a623; color:white; border-radius:50px; padding:4px 12px; font-size:0.8rem; display:inline-block;">الدرجة: ${q.grade}</span></div>
-                    <div class="student-answer-area">
-                        <textarea id="studentAns_${idx}" rows="3" placeholder="اكتب إجابتك هنا...">${escapeHtml(savedVal)}</textarea>
-                    </div>
-                </div>
-            `;
-        });
-        studentArea.innerHTML = html;
-        if(!studentSubmitLocked) {
-            for(let i=0; i<examQuestions.length; i++) {
-                let ta = document.getElementById(`studentAns_${i}`);
-                if(ta) {
-                    ta.addEventListener('input', function() {
-                        localStorage.setItem(`temp_answer_${i}`, this.value);
-                    });
-                }
-            }
+    // تحديث عداد الأسئلة وحد التحذير
+    function updateCounters() {
+        const len = questionsList.length;
+        questionCounterSpan.innerText = `${len} / 15 سؤال`;
+        if (len >= 15) {
+            maxWarningSpan.innerText = "⚠️ تم الوصول للحد الأقصى (15 سؤال). لا يمكن إضافة المزيد.";
+            addBtn.disabled = true;
+            addBtn.style.opacity = "0.6";
+            addBtn.style.cursor = "not-allowed";
         } else {
-            for(let i=0; i<examQuestions.length; i++) {
-                let ta = document.getElementById(`studentAns_${i}`);
-                if(ta) ta.disabled = true;
-            }
+            maxWarningSpan.innerText = "";
+            addBtn.disabled = false;
+            addBtn.style.opacity = "1";
+            addBtn.style.cursor = "pointer";
+        }
+        renderQuestionsEditor();  // إعادة رسم المحرر
+        renderPreview();          // تحديث المعاينة النهائية
+    }
+
+    // عرض الأسئلة داخل المحرر (مع إمكانية الحذف والتعديل)
+    function renderQuestionsEditor() {
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 0; i < questionsList.length; i++) {
+            const qDiv = document.createElement('div');
+            qDiv.className = 'question-item';
+            qDiv.setAttribute('data-index', i);
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'question-number';
+            numberSpan.innerText = i + 1;
+            const textDiv = document.createElement('div');
+            textDiv.className = 'question-text';
+            const textarea = document.createElement('textarea');
+            textarea.rows = 2;
+            textarea.placeholder = `نص السؤال المقالي ${i+1} ...`;
+            textarea.value = questionsList[i];
+            textarea.addEventListener('input', (e) => {
+                questionsList[i] = e.target.value;
+                renderPreview();
+                updateCounters(); // يضمن تحديث أي تغيير بالنص
+            });
+            textDiv.appendChild(textarea);
+            const removeBtn = document.createElement('button');
+            removeBtn.innerText = '✖ حذف';
+            removeBtn.className = 'remove-question';
+            removeBtn.addEventListener('click', () => {
+                if (questionsList.length > 1) {
+                    questionsList.splice(i, 1);
+                } else {
+                    // لا يمكن حذف آخر سؤال (يبقى سؤال واحد على الأقل)
+                    if(questionsList.length === 1) {
+                        alert("يجب أن يبقى سؤال واحد على الأقل في الورقة.");
+                        return;
+                    }
+                    questionsList.splice(i,1);
+                }
+                updateCounters();
+            });
+            qDiv.appendChild(numberSpan);
+            qDiv.appendChild(textDiv);
+            qDiv.appendChild(removeBtn);
+            container.appendChild(qDiv);
         }
     }
-    
-    function submitFinalExam() {
-        if(studentSubmitLocked) { alert("لا يمكنك إعادة الإرسال، لقد أنهيت الاختبار مسبقاً"); return; }
-        if(examQuestions.length === 0) { alert("لا توجد أسئلة متاحة"); return; }
-        if(!currentStudentData.name || !currentStudentData.grade || !currentStudentData.subject) {
-            alert("بيانات الطالب غير مكتملة");
+
+    // إضافة سؤال جديد
+    function addNewQuestion() {
+        if (questionsList.length >= 15) {
+            alert("لا يمكن إضافة أكثر من 15 سؤالاً في الصفحة الواحدة (حد أقصى).");
             return;
         }
-        let answersArray = [];
-        for(let i=0; i<examQuestions.length; i++) {
-            let ansText = document.getElementById(`studentAns_${i}`)?.value.trim() || '';
-            answersArray.push({
-                questionText: examQuestions[i].questionText,
-                answerText: ansText,
-                gradeValue: examQuestions[i].grade,
-                manualGrade: null
-            });
-        }
-        let submission = {
-            studentName: currentStudentData.name,
-            studentGrade: currentStudentData.grade,
-            studentSubject: currentStudentData.subject,
-            submittedAt: new Date().toLocaleString('ar-EG'),
-            answers: answersArray
-        };
-        studentAnswersList.push(submission);
-        saveAllToLocal();
-        studentSubmitLocked = true;
-        localStorage.setItem(`student_locked_${currentStudentData.name}_${currentStudentData.grade}`, 'true');
-        for(let i=0; i<examQuestions.length; i++) localStorage.removeItem(`temp_answer_${i}`);
-        studentSubmitMsgDiv.innerHTML = '<span style="color:green;"><i class="fas fa-check-circle"></i> تم إرسال الاختبار بنجاح! لا يمكنك تعديل الإجابات مرة أخرى.</span>';
-        submitBtn.disabled = true;
-        renderStudentQuestionsUI();
-        const anyPreviewArea = document.getElementById('answersPreviewArea');
-        if(anyPreviewArea) renderResultsPreviewInto(anyPreviewArea);
-        studentLockedMsgDiv.style.display = 'block';
-        studentLockedMsgDiv.innerHTML = '<i class="fas fa-lock"></i> الاختبار منتهي. لا يمكن إعادة الحل إلا عبر المعلم (الرقم السري).';
+        questionsList.push("سؤال مقالي جديد: اذكر أسباب وأهمية ...");
+        updateCounters();
     }
-    
-    function showStudentInfoModal() {
-        let modalHtml = `
-            <div id="studentModal" class="modal-overlay">
-                <div class="modal-card">
-                    <div class="teacher-icon" id="teacherIconModal">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                    </div>
-                    <h3><i class="fas fa-user-graduate"></i> بيانات الطالب</h3>
-                    <input type="text" id="modalStudentName" placeholder="الاسم" autocomplete="off">
-                    <input type="text" id="modalStudentGrade" placeholder="الصف">
-                    <input type="text" id="modalStudentSubject" placeholder="المادة">
-                    <button id="confirmStudentBtn" class="btn btn-primary" style="margin-top:15px;">دخول الاختبار</button>
-                </div>
+
+    // تحديث المعاينة (الورقة النهائية بتصميم منفصل)
+    function renderPreview() {
+        // قراءة بيانات الاختبار الحالية
+        const examName = examNameInput.value.trim() || "اختبار غير محدد";
+        const subject = subjectInput.value.trim() || "مادة غير محددة";
+        const semester = semesterInput.value.trim() || "--";
+        const schoolName = schoolNameInput.value.trim() || "المدرسة";
+
+        // بناء جزء معلومات الاختبار (بجانب بعض في سطر واحد)
+        const infoRowHTML = `
+            <div class="exam-info-row">
+                <div class="info-chip"><strong>📋 الاختبار:</strong> ${escapeHtml(examName)}</div>
+                <div class="info-chip"><strong>📖 المادة:</strong> ${escapeHtml(subject)}</div>
+                <div class="info-chip"><strong>🗓️ الفصل:</strong> ${escapeHtml(semester)}</div>
+                <div class="info-chip"><strong>🏫 المدرسة:</strong> ${escapeHtml(schoolName)}</div>
             </div>
         `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        const modal = document.getElementById('studentModal');
-        const confirmBtn = document.getElementById('confirmStudentBtn');
-        const teacherIcon = document.getElementById('teacherIconModal');
-        
-        confirmBtn.addEventListener('click', () => {
-            let name = document.getElementById('modalStudentName').value.trim();
-            let grade = document.getElementById('modalStudentGrade').value.trim();
-            let subject = document.getElementById('modalStudentSubject').value.trim();
-            if(!name || !grade || !subject) { alert("الرجاء تعبئة جميع الحقول"); return; }
-            let lockKey = `student_locked_${name}_${grade}`;
-            if(localStorage.getItem(lockKey) === 'true') {
-                alert("⚠️ لقد سبق لك إجراء الاختبار ولا يمكنك الدخول مجدداً. الرجاء مراجعة المعلم (الرقم السري).");
-                modal.remove();
-                return;
-            }
-            currentStudentData = { name, grade, subject };
-            studentSubmitLocked = false;
-            submitBtn.disabled = false;
-            studentSubmitMsgDiv.innerHTML = '';
-            studentLockedMsgDiv.style.display = 'none';
-            for(let i=0; i<examQuestions.length; i++) localStorage.removeItem(`temp_answer_${i}`);
-            renderStudentQuestionsUI();
-            modal.remove();
-        });
-        
-        teacherIcon.addEventListener('click', () => {
-            modal.remove();
-            if(teacherSecret && teacherSecret !== "") {
-                // طلب الرقم السري
-                let passModal = document.createElement('div');
-                passModal.className = 'modal-overlay';
-                passModal.innerHTML = `
-                    <div class="modal-card">
-                        <h3><i class="fas fa-lock"></i> الرقم السري للمعلم</h3>
-                        <input type="password" id="secretPasswordInput" placeholder="أدخل الرقم السري" autocomplete="off">
-                        <div style="margin-top: 15px;">
-                            <button id="submitSecretBtn" class="btn btn-primary">تأكيد</button>
-                            <button id="cancelSecretBtn" class="btn btn-outline">إلغاء</button>
-                        </div>
-                        <div id="secretErrorMsg" class="error-message"></div>
+
+        // بناء الأسئلة المقالية (كحد أقصى 15 فعلياً)
+        let questionsHTML = `<div class="questions-list-preview">`;
+        if (questionsList.length === 0) {
+            questionsHTML += `<div style="padding: 2rem; text-align:center; color:gray;">لا توجد أسئلة بعد، أضف أسئلة من لوحة التحرير.</div>`;
+        } else {
+            questionsList.forEach((qText, idx) => {
+                const displayText = qText.trim() === "" ? "(سؤال فارغ - يرجى كتابة المحتوى)" : qText;
+                questionsHTML += `
+                    <div class="preview-question">
+                        <div class="preview-q-num">${idx+1}</div>
+                        <div class="preview-q-text">${escapeHtml(displayText)}</div>
                     </div>
                 `;
-                document.body.appendChild(passModal);
-                const submitBtnModal = document.getElementById('submitSecretBtn');
-                const cancelBtn = document.getElementById('cancelSecretBtn');
-                const passInput = document.getElementById('secretPasswordInput');
-                const errorDiv = document.getElementById('secretErrorMsg');
-                
-                const checkPassword = () => {
-                    const entered = passInput.value.trim();
-                    if(entered === teacherSecret) {
-                        passModal.remove();
-                        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                        teacherTabBtn.classList.add('active');
-                        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-                        document.getElementById('teacherTab').classList.add('active');
-                        if(teacherContainer && teacherContainer.innerHTML === '') {
-                            if(teacherSecret && teacherSecret !== "") {
-                                showTeacherLockScreen();
-                            } else {
-                                teacherContainer.innerHTML = teacherContentHTML;
-                                loadTeacherContent();
-                            }
-                        }
-                    } else {
-                        errorDiv.innerText = '❌ الرقم السري غير صحيح';
-                    }
-                };
-                submitBtnModal.addEventListener('click', checkPassword);
-                cancelBtn.addEventListener('click', () => passModal.remove());
-                passInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkPassword(); });
-            } else {
-                // لا يوجد رقم سري، افتح مباشرة
-                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                teacherTabBtn.classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-                document.getElementById('teacherTab').classList.add('active');
-                if(teacherContainer && teacherContainer.innerHTML === '') {
-                    teacherContainer.innerHTML = teacherContentHTML;
-                    loadTeacherContent();
-                }
-            }
-        });
-    }
-    
-    function setupSecretSettings() {
-        const setSecretBtn = document.getElementById('setSecretBtn');
-        const newSecretInput = document.getElementById('newSecretInput');
-        const secretChangeMsg = document.getElementById('secretChangeMsg');
-        const secretStatusMsg = document.getElementById('secretStatusMsg');
-        
-        if(secretStatusMsg) {
-            if(teacherSecret && teacherSecret !== "") {
-                secretStatusMsg.innerHTML = '<i class="fas fa-check-circle"></i> الرقم السري مُعيّن حالياً. يمكنك تغييره من هنا.';
-                secretStatusMsg.style.color = "green";
-            } else {
-                secretStatusMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> لم يتم تعيين رقم سري بعد. الرجاء تعيين رقم سري لحماية لوحة المعلم.';
-                secretStatusMsg.style.color = "orange";
-            }
-        }
-        
-        if(setSecretBtn) {
-            setSecretBtn.addEventListener('click', () => {
-                let newPass = newSecretInput.value.trim();
-                if(newPass && newPass.length > 0) {
-                    teacherSecret = newPass;
-                    localStorage.setItem('teacher_secret', teacherSecret);
-                    secretChangeMsg.innerHTML = '✅ تم تعيين / تغيير الرقم السري بنجاح';
-                    if(secretStatusMsg) {
-                        secretStatusMsg.innerHTML = '<i class="fas fa-check-circle"></i> الرقم السري مُعيّن حالياً.';
-                        secretStatusMsg.style.color = "green";
-                    }
-                    newSecretInput.value = '';
-                    setTimeout(() => secretChangeMsg.innerHTML = '', 3000);
-                } else {
-                    secretChangeMsg.innerHTML = '<span style="color:red;">⚠️ الرجاء إدخال رقم سري صالح</span>';
-                }
             });
         }
+        questionsHTML += `</div>`;
+
+        // إضافة توقيع اختياري أنيق (أسطر للكتابة للأسئلة المقالية)
+        const signatureLine = `<div style="margin-top: 2rem; border-top: 1px dashed #ccd7e8; padding-top: 1rem; font-size:0.8rem; color:#8196b0; text-align:left;">ملاحظات: يمكن للطالب الإجابة في المساحة المخصصة أسفل كل سؤال.</div>`;
+
+        const finalHTML = infoRowHTML + questionsHTML + signatureLine;
+        examPaperPreview.innerHTML = finalHTML;
     }
-    
-    function loadInitialData() {
-        let savedQ = localStorage.getItem('exam_questions');
-        if(savedQ) {
-            try {
-                examQuestions = JSON.parse(savedQ);
-            } catch(e) { examQuestions = [{questionText: "اذكر مفهوم المواطنة الرقمية", grade: 5}]; }
-        } else {
-            examQuestions = [{questionText: "اذكر مفهوم المواطنة الرقمية", grade: 5}];
-        }
-        
-        let savedSub = localStorage.getItem('student_submissions');
-        if(savedSub) {
-            try {
-                studentAnswersList = JSON.parse(savedSub);
-            } catch(e) { studentAnswersList = []; }
-        }
-        
-        teacherContentHTML = buildTeacherUI();
-        
-        if(teacherContainer) {
-            if(teacherSecret && teacherSecret !== "") {
-                showTeacherLockScreen();
-            } else {
-                teacherContainer.innerHTML = teacherContentHTML;
-                loadTeacherContent();
-            }
-        }
-        
-        renderStudentQuestionsUI();
-        showStudentInfoModal();
-        
-        const studentTabBtn = document.querySelector('.tab-btn[data-tab="studentTab"]');
-        if(studentTabBtn) studentTabBtn.click();
-    }
-    
-    // أحداث تبويب المعلم
-    if(teacherTabBtn) {
-        teacherTabBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if(teacherSecret && teacherSecret !== "" && !isTeacherUnlocked) {
-                // طلب الرقم السري
-                let passModal = document.createElement('div');
-                passModal.className = 'modal-overlay';
-                passModal.innerHTML = `
-                    <div class="modal-card">
-                        <h3><i class="fas fa-lock"></i> الرقم السري للمعلم</h3>
-                        <input type="password" id="tempTeacherPass" placeholder="أدخل الرقم السري" autocomplete="off">
-                        <div style="margin-top: 15px;">
-                            <button id="tempSubmitBtn" class="btn btn-primary">تأكيد</button>
-                            <button id="tempCancelBtn" class="btn btn-outline">إلغاء</button>
-                        </div>
-                        <div id="tempErrorMsg" class="error-message"></div>
-                    </div>
-                `;
-                document.body.appendChild(passModal);
-                const submitBtnTemp = document.getElementById('tempSubmitBtn');
-                const cancelBtnTemp = document.getElementById('tempCancelBtn');
-                const passInputTemp = document.getElementById('tempTeacherPass');
-                const errorTemp = document.getElementById('tempErrorMsg');
-                
-                const checkPass = () => {
-                    if(passInputTemp.value.trim() === teacherSecret) {
-                        passModal.remove();
-                        isTeacherUnlocked = true;
-                        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                        teacherTabBtn.classList.add('active');
-                        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-                        document.getElementById('teacherTab').classList.add('active');
-                        if(teacherContainer && teacherContainer.innerHTML !== teacherContentHTML) {
-                            teacherContainer.innerHTML = teacherContentHTML;
-                            loadTeacherContent();
-                        }
-                    } else {
-                        errorTemp.innerText = '❌ الرقم السري غير صحيح';
-                    }
-                };
-                submitBtnTemp.addEventListener('click', checkPass);
-                cancelBtnTemp.addEventListener('click', () => passModal.remove());
-                passInputTemp.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkPass(); });
-            } else {
-                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                teacherTabBtn.classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-                document.getElementById('teacherTab').classList.add('active');
-                if(teacherContainer && teacherContainer.innerHTML !== teacherContentHTML && (!teacherSecret || teacherSecret === "")) {
-                    teacherContainer.innerHTML = teacherContentHTML;
-                    loadTeacherContent();
-                }
-            }
+
+    // دالة مساعدة لتفادي XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
         });
     }
-    
-    document.getElementById('submitStudentAnswers')?.addEventListener('click', submitFinalExam);
-    
-    loadInitialData();
+
+    // استماع لتغيير المدخلات لتحديث المعاينة فورياً
+    function bindInputs() {
+        examNameInput.addEventListener('input', () => renderPreview());
+        subjectInput.addEventListener('input', () => renderPreview());
+        semesterInput.addEventListener('input', () => renderPreview());
+        schoolNameInput.addEventListener('input', () => renderPreview());
+    }
+
+    // تصدير صورة (html2canvas) للورقة كاملة
+    async function exportAsImage() {
+        const previewElement = document.getElementById('examPaperPreview');
+        if (!previewElement) return;
+        try {
+            // تحسين مؤقت لجعل الخلفية والخيارات دقيقة
+            const canvas = await html2canvas(previewElement, {
+                scale: 2.5,
+                backgroundColor: '#ffffff',
+                logging: false,
+                useCORS: false,
+                letterRendering: true
+            });
+            const link = document.createElement('a');
+            const date = new Date();
+            link.download = `ورقة_اختبار_${date.getTime()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } catch (err) {
+            console.error(err);
+            alert("حدث خطأ أثناء إنشاء الصورة، تأكد من اتصال الإنترنت والمكتبات.");
+        }
+    }
+
+    // تصدير PDF باستخدام jspdf + html2canvas للحصول على دقة عالية (ورقة A4)
+    async function exportAsPDF() {
+        const previewElement = document.getElementById('examPaperPreview');
+        if (!previewElement) return;
+        try {
+            // إظهار حالة انتظار (اختياري)
+            const originalBtnText = exportPdfBtn.innerText;
+            exportPdfBtn.innerText = "جاري إنشاء PDF...";
+            exportPdfBtn.disabled = true;
+            const canvas = await html2canvas(previewElement, {
+                scale: 2.2,
+                backgroundColor: '#ffffff',
+                logging: false
+            });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            // تحديد اتجاه الصفحة حسب المحتوى: بشكل أفقي أو عمودي (A4 عمودي)
+            const imgWidth = 210; // عرض A4 بالملم
+            const pageHeight = 297;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let pdf = new jsPDF('p', 'mm', 'a4');
+            let position = 0;
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            // إذا تجاوز المحتوى صفحة واحدة نضيف المزيد
+            let heightLeft = imgHeight - pageHeight;
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+            pdf.save(`الاختبار_${new Date().toISOString().slice(0,19)}.pdf`);
+            exportPdfBtn.innerText = originalBtnText;
+            exportPdfBtn.disabled = false;
+        } catch (err) {
+            exportPdfBtn.innerText = "تصدير PDF";
+            exportPdfBtn.disabled = false;
+            alert("فشل التصدير: " + err.message);
+        }
+    }
+
+    // طباعة الورقة مباشرة باستخدام نافذة الطباعة
+    function printExam() {
+        // نأخذ محتوى منطقة المعاينة ونضعه في نافذة طباعة منسقة
+        const printContent = document.getElementById('examPaperPreview').cloneNode(true);
+        const style = document.createElement('style');
+        style.textContent = `
+            * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', 'Cairo', sans-serif; direction: rtl; }
+            body { padding: 0.8cm; background: white; }
+            .exam-paper { max-width: 100%; margin: 0 auto; }
+            .exam-info-row { background: #eef2f9; border-radius: 1rem; padding: 0.8rem 1.2rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.8rem; margin-bottom: 2rem; border:1px solid #cddfed;}
+            .info-chip { background: #ffffffcc; padding: 0.3rem 1rem; border-radius: 2rem; font-weight:500; }
+            .questions-list-preview { display: flex; flex-direction: column; gap:1rem; }
+            .preview-question { display: flex; gap: 0.8rem; border-bottom: 1px dashed #ccc; padding-bottom: 0.7rem; align-items: flex-start;}
+            .preview-q-num { background: #eef2ff; width: 30px; height: 30px; border-radius: 30px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink:0;}
+            .preview-q-text { font-size: 1rem; line-height: 1.45; }
+            @media print { body { margin:0; padding:0;} .no-print-action{display:none;} }
+        `;
+        const win = window.open('', '_blank');
+        win.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>طباعة ورقة الاختبار</title></head><body>');
+        win.document.write('<div class="exam-paper">');
+        win.document.write(printContent.innerHTML);
+        win.document.write('</div>');
+        win.document.write('</body></html>');
+        win.document.head.appendChild(style);
+        win.document.close();
+        win.focus();
+        win.print();
+        // ليس بالضرورة إغلاق النافذة فوراً
+    }
+
+    // ربط الأحداث
+    addBtn.addEventListener('click', addNewQuestion);
+    exportImageBtn.addEventListener('click', exportAsImage);
+    exportPdfBtn.addEventListener('click', exportAsPDF);
+    printBtn.addEventListener('click', printExam);
+
+    // تهيئة أولية
+    function init() {
+        bindInputs();
+        updateCounters();   // ينشئ المحرر + المعاينة
+    }
+
+    init();
 </script>
 </body>
 </html>
